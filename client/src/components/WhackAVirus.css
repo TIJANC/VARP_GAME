@@ -1,0 +1,34 @@
+.whack-a-virus {
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .hole {
+    width: 100px;
+    height: 100px;
+    background-color: #ccc;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .hole:hover {
+    background-color: #bbb;
+  }
+  
+  .virus {
+    background-color: red;
+    border: 2px solid darkred;
+  }
+  

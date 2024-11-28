@@ -1,0 +1,39 @@
+.quiz-game {
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  .options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .option-button {
+    margin: 10px 0;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .option-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .quiz-game h1 {
+    margin-bottom: 20px;
+  }
+  
+  .quiz-game h2 {
+    margin-bottom: 20px;
+  }
+  
+  .quiz-game p {
+    font-size: 18px;
+  }
+  

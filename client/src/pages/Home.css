@@ -1,0 +1,27 @@
+.level-display {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .exp-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    margin: 10px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .exp-progress {
+    height: 100%;
+    background-color: #4caf50;
+    width: 0; /* Dynamically updated */
+    transition: width 0.5s ease-in-out;
+  }
+  
+  .coins-display {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  

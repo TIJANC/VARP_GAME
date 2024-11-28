@@ -1,0 +1,75 @@
+.trivia-bingo {
+    text-align: center;
+    margin: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .bingo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 400px;
+    margin: 20px auto;
+  }
+  
+  .bingo-square {
+    border: 2px solid #444;
+    padding: 20px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    text-align: center;
+    transition: 0.3s;
+  }
+  
+  .bingo-square:hover {
+    background-color: #ddd;
+  }
+  
+  .bingo-square.marked {
+    background-color: #4caf50;
+    color: white;
+    pointer-events: none;
+  }
+  
+  .answer-box {
+    margin: 20px;
+  }
+  
+  .answer-box input {
+    padding: 10px;
+    margin-right: 10px;
+  }
+  
+  .answer-box button {
+    padding: 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .answer-box button:hover {
+    background-color: #45a049;
+  }
+  
+  .message {
+    margin-top: 20px;
+    font-size: 1.2em;
+  }
+  
+  .restart-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+  }
+  
+  .restart-btn:hover {
+    background-color: #1976d2;
+  }
+  
