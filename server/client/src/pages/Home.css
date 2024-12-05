@@ -25,3 +25,48 @@
     margin-bottom: 20px;
   }
   
+  .leaderboard {
+    margin: 20px 0;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+  
+  .leaderboard h2 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .leaderboard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .leaderboard-item:last-child {
+    border-bottom: none;
+  }
+  
+  .leaderboard-rank {
+    font-weight: bold;
+  }
+  
+  .leaderboard-username {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .leaderboard-exp {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  

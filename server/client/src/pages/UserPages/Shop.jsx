@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ActionNavbar from '../../components/ActionNavbar';
 import './Shop.css';
 
 const Shop = () => {
   const [userInfo, setUserInfo] = useState({ coins: 0, profileCompleted: false });
   const [cards, setCards] = useState([]);
 
-  // Fetch user information and card statuses
   useEffect(() => {
     const fetchShopData = async () => {
       try {
@@ -33,7 +33,6 @@ const Shop = () => {
     fetchShopData();
   }, []);
 
-  // Handle card unlocking
   const unlockCard = async (card) => {
     if (card.isUnlocked) {
       alert('This card is already unlocked!');
@@ -43,7 +42,6 @@ const Shop = () => {
     const token = localStorage.getItem('token');
 
     if (card.unlockMethod === 'coins') {
-      // Check if the user has enough coins
       if (userInfo.coins < card.price) {
         alert('Not enough coins to unlock this card!');
         return;
@@ -60,7 +58,6 @@ const Shop = () => {
           }
         );
 
-        // Update UI after successful unlock
         if (response.data.message) {
           alert(`${card.name} unlocked!`);
           setUserInfo((prev) => ({
@@ -78,7 +75,6 @@ const Shop = () => {
         );
       }
     } else if (card.unlockMethod === 'task') {
-      // Check if task requirements are met
       if (card.task === 'Complete profile' && !userInfo.profileCompleted) {
         alert('Complete your profile to unlock this card!');
         return;
@@ -95,9 +91,8 @@ const Shop = () => {
           }
         );
 
-        // Update UI after successful unlock
         if (response.data.message) {
-          alert(response.data.message); // Task-specific success message
+          alert(response.data.message);
           setCards((prev) =>
             prev.map((c) => (c.id === card.id ? { ...c, isUnlocked: true } : c))
           );
@@ -137,6 +132,24 @@ const Shop = () => {
           </div>
         ))}
       </div>
+
+      {/* ActionNavbar */}
+      <ActionNavbar
+        coins={userInfo.coins}
+        navigate={(route) => {
+          const token = localStorage.getItem('token');
+          if (token) {
+            window.location.href = route;
+          }
+        }}
+        options={[
+          { label: 'Shop', route: '/shop', iconClass: 'la-store' },
+          { label: 'Cards', route: '/cardCollection', iconClass: 'la-id-card' },
+          { label: 'Home', route: '/home', iconClass: 'la-home' },
+          { label: 'Profile', route: '/profile', iconClass: 'la-user' },
+          { label: 'Map', route: '/map', iconClass: 'la-map' }, 
+        ]}
+      />
     </div>
   );
 };
