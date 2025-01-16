@@ -38,27 +38,29 @@ router.post('/update-profile', authenticateUser, async (req, res) => {
   try {
     const { gender, age, birthplace, scholarity, avatar } = req.body;
 
-    // Validate inputs (if required)
+    // Validate inputs
     if (!gender || !age || !birthplace || !scholarity) {
       return res.status(400).json({ error: 'All fields are required to complete the profile.' });
     }
 
-    // Update the user's profile
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      {
-        gender,
-        age,
-        birthplace,
-        scholarity,
-        avatar, // Allow updating avatar
-      },
-      { new: true } // Return the updated user document
-    );
-
+    // Find user
+    const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
+
+    // Update profile fields
+    user.gender = gender;
+    user.age = age;
+    user.birthplace = birthplace;
+    user.scholarity = scholarity;
+    user.avatar = avatar;
+
+    // Mark profileCompleted task as true
+    user.taskProgress.profileCompleted = true;
+
+    // Save updated user
+    await user.save();
 
     res.json(user); // Return the updated user
   } catch (error) {
@@ -76,15 +78,15 @@ router.post('/unlock-card', authenticateUser, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Ensure cards array exists
+    // Ensure the cards array exists
     if (!Array.isArray(user.cards)) {
       user.cards = [];
     }
 
-    // Find the card in user's collection
+    // Check if the card is already in the user's collection
     let card = user.cards.find((c) => c.id === cardId);
 
-    // Retrieve the card from default cards
+    // Retrieve the default card details
     const defaultCards = [
       { id: 1, name: 'Card 1', unlockMethod: 'coins', price: 10 },
       { id: 2, name: 'Card 2', unlockMethod: 'task', task: 'Complete profile' },
@@ -97,14 +99,15 @@ router.post('/unlock-card', authenticateUser, async (req, res) => {
       { id: 9, name: 'Card 9', unlockMethod: 'coins', price: 30 },
       { id: 10, name: 'Card 10', unlockMethod: 'task', task: 'Complete all tasks' },
     ];
+
     const defaultCard = defaultCards.find((c) => c.id === cardId);
     if (!defaultCard) {
       return res.status(400).json({ error: 'Invalid card ID' });
     }
 
-    // If card doesn't exist in user's collection, add it
+    // If the card doesn't exist in user's collection, add it with the default properties
     if (!card) {
-      card = { id: cardId, isUnlocked: false };
+      card = { id: cardId, isUnlocked: false, ...defaultCard };
       user.cards.push(card);
     }
 
@@ -120,11 +123,6 @@ router.post('/unlock-card', authenticateUser, async (req, res) => {
       }
       user.coins -= defaultCard.price;
     } else if (method === 'task') {
-      // Task validation logic
-      // ... ensure taskProgress is initialized
-      if (!user.taskProgress) {
-        user.taskProgress = {};
-      }
       const taskCompleted = {
         'Complete profile': user.taskProgress.profileCompleted,
         'Win 3 games': user.taskProgress.gamesWon >= 3,
@@ -147,10 +145,9 @@ router.post('/unlock-card', authenticateUser, async (req, res) => {
     // Mark the card as unlocked
     card.isUnlocked = true;
 
-    // **Important**: Mark 'cards' as modified
-    user.markModified('cards');
-
+    // Save the user document
     await user.save();
+
     res.json({ message: 'Card unlocked successfully!', coins: user.coins });
   } catch (error) {
     console.error('Error unlocking card:', error);
@@ -165,23 +162,25 @@ router.get('/shop', authenticateUser, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const defaultCards = [
-      { id: 1, name: 'Card 1', unlockMethod: 'coins', price: 10, isUnlocked: false },
-      { id: 2, name: 'Card 2', unlockMethod: 'task', task: 'Complete profile', isUnlocked: false },
-      { id: 3, name: 'Card 3', unlockMethod: 'coins', price: 15, isUnlocked: false },
-      { id: 4, name: 'Card 4', unlockMethod: 'task', task: 'Win 3 games', isUnlocked: false },
-      { id: 5, name: 'Card 5', unlockMethod: 'coins', price: 20, isUnlocked: false },
-      { id: 6, name: 'Card 6', unlockMethod: 'task', task: 'Play 5 games', isUnlocked: false },
-      { id: 7, name: 'Card 7', unlockMethod: 'coins', price: 25, isUnlocked: false },
-      { id: 8, name: 'Card 8', unlockMethod: 'task', task: 'Invite a friend', isUnlocked: false },
-      { id: 9, name: 'Card 9', unlockMethod: 'coins', price: 30, isUnlocked: false },
-      { id: 10, name: 'Card 10', unlockMethod: 'task', task: 'Complete all tasks', isUnlocked: false },
+      { id: 1, name: 'Card 1', unlockMethod: 'coins', price: 10 },
+      { id: 2, name: 'Card 2', unlockMethod: 'task', task: 'Complete profile' },
+      { id: 3, name: 'Card 3', unlockMethod: 'coins', price: 15 },
+      { id: 4, name: 'Card 4', unlockMethod: 'task', task: 'Win 3 games' },
+      { id: 5, name: 'Card 5', unlockMethod: 'coins', price: 20 },
+      { id: 6, name: 'Card 6', unlockMethod: 'task', task: 'Play 5 games' },
+      { id: 7, name: 'Card 7', unlockMethod: 'coins', price: 25 },
+      { id: 8, name: 'Card 8', unlockMethod: 'task', task: 'Invite a friend' },
+      { id: 9, name: 'Card 9', unlockMethod: 'coins', price: 30 },
+      { id: 10, name: 'Card 10', unlockMethod: 'task', task: 'Complete all tasks' },
     ];
 
+    // Create a merged list of cards with the user's unlock status
     const mergedCards = defaultCards.map((defaultCard) => {
       const userCard = user.cards?.find((card) => card.id === defaultCard.id);
-      return userCard
-        ? { ...defaultCard, isUnlocked: userCard.isUnlocked } // Update unlock status
-        : defaultCard;
+      return {
+        ...defaultCard,
+        isUnlocked: userCard ? userCard.isUnlocked : false,
+      };
     });
 
     res.json({

@@ -116,7 +116,7 @@ const FlorenceMap = () => {
         navigate={navigate}
         options={[
           { label: 'Shop', route: '/shop', iconClass: 'la-store' },
-          { label: 'Cards', route: '/cardCollection', iconClass: 'la-id-card' },
+          { label: 'Forum', route: '/forum', iconClass: 'la-comments' },
           { label: 'Home', route: '/home', iconClass: 'la-home' },
           { label: 'Profile', route: '/profile', iconClass: 'la-user' },
           { label: 'Map', route: '/map', iconClass: 'la-map' }, // Highlight current page

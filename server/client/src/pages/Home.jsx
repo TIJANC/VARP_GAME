@@ -103,10 +103,9 @@ const Home = () => {
               <option value="whack-a-virus">Whack-a-Virus Game</option>
               <option value="build-vaccine">Build a Vaccine Game</option>
               <option value="trivia-bingo">Trivia Bingo</option>
-              <option value="infection-chain-breaker">
-                Infection Chain Breaker
-              </option>
+              <option value="infection-chain-breaker"> Infection Chain Breaker</option>
               <option value="antibody-catch">Antibody Catch</option>
+              <option value="dinamic-quiz">Dinamic Quiz</option>
             </select>
           </div>
 
@@ -129,7 +128,7 @@ const Home = () => {
         navigate={navigate}
         options={[
           { label: 'Shop', route: '/shop', iconClass: 'la-store' },
-          { label: 'Cards', route: '/cardCollection', iconClass: 'la-id-card' },
+          { label: 'Forum', route: '/forum', iconClass: 'la-comments' },
           { label: 'Home', route: '/home', iconClass: 'la-home' },
           { label: 'Profile', route: '/profile', iconClass: 'la-user' },
           { label: 'Map', route: '/map', iconClass: 'la-map' },

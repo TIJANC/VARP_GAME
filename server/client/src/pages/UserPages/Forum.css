@@ -1,0 +1,41 @@
+.forum-container {
+    padding: 20px;
+  }
+  
+  .create-post {
+    margin-bottom: 30px;
+  }
+  
+  .create-post input,
+  .create-post textarea {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+  
+  .create-post button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .posts .post {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .comments input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 10px;
+  }
+  
+  .comments button {
+    margin-top: 5px;
+    padding: 5px 10px;
+  }
+  

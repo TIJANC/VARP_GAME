@@ -11,9 +11,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import LandingPage from './pages/LandingPage';
 import Shop from './pages/UserPages/Shop'
-import { CardCollection } from './pages/UserPages/CardCollection';
 import Profile from './pages/UserPages/Profile';
 import FlorenceMap from './pages/Map'; 
+import Forum from './pages/UserPages/Forum';
 // GAMES
 import MemoryGame from './components/MemoryGame';
 import QuizGame from './components/QuizGame';
@@ -23,6 +23,7 @@ import BuildVaccine from './components/BuildVaccine';
 import TriviaBingo from './components/TriviaBingo';
 import InfectionChainBreaker from './components/InfectionChainBreaker';
 import AntibodyCatch from './components/AntibodyCatch';
+import Quiz from './components/dinamicQuiz';
 
 function App() {
   return (
@@ -40,9 +41,9 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/home" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
-            <Route path="/cardCollection" element={<CardCollection />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/map" element={<FlorenceMap />} /> 
+            <Route path="/forum" element={<Forum />}/>
             <Route path="/games/memory" element={<MemoryGame />} />
             <Route path="/games/quiz" element={<QuizGame />} />
             <Route path="/games/word-scramble" element={<WordScramble />} />
@@ -51,6 +52,7 @@ function App() {
             <Route path="/games/trivia-bingo" element={<TriviaBingo />} />
             <Route path="/games/infection-chain-breaker" element={<InfectionChainBreaker />} />
             <Route path="/games/antibody-catch" element={<AntibodyCatch />} />
+            <Route path="/games/dinamic-quiz" element={<Quiz />} />
           </Route>
 
           {/* Admin Route with Role-Based Access */}

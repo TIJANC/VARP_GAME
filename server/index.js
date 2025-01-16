@@ -5,6 +5,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const path = require('path');
 const playerProfileRoutes = require('./routes/playerProfile'); 
+const forumRoutes = require('./routes/forum')
+const dinamicQuizRoutes = require('./routes/dinamicQuiz')
 
 dotenv.config();
 
@@ -28,8 +30,10 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes); // Ensure this line is correct
-app.use('/api/player', playerProfileRoutes); // Use the route file with a base path
+app.use('/api/auth', authRoutes); 
+app.use('/api/player', playerProfileRoutes); 
+app.use('/api/forum', forumRoutes);
+app.use('/api/dinamicQuiz', dinamicQuizRoutes)
 
 // Serve React Frontend
 app.use(express.static(path.join(__dirname, "/client/dist")));
