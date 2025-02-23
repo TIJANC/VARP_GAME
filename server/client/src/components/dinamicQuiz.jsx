@@ -1,72 +1,105 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './dinamicQuiz.css';
 
 const Quiz = () => {
-    const [questions, setQuestions] = useState([]); // Initialize as an empty array
+    const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [score, setScore] = useState(0);
-    const [loading, setLoading] = useState(true); // Track loading state
-    const [error, setError] = useState(null); // Track error state
+    const [answeredQuestions, setAnsweredQuestions] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [quizCompleted, setQuizCompleted] = useState(false);
+    const [rewards, setRewards] = useState(null);
+    const [earnedCoins, setEarnedCoins] = useState(0);
+    const [earnedExp, setEarnedExp] = useState(0);
 
-    // Fetch questions from the backend
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
                 const response = await axios.get('/api/dinamicQuiz/generate-questions');
-                console.log('Response data:', response.data); // Log the entire response
                 if (response.data.questions && response.data.questions.length > 0) {
-                    console.log('Fetched questions:', response.data.questions); // Log fetched questions
-                    setQuestions(response.data.questions); // Set the questions array
+                    setQuestions(response.data.questions);
                 } else {
-                    console.warn('No questions available'); // Log warning if no questions
-                    setError('No questions available.'); // Handle empty questions
+                    setError('No questions available.');
                 }
             } catch (error) {
-                console.error('Error fetching questions:', error);
                 setError('Failed to load questions. Please try again later.');
             } finally {
-                setLoading(false); // Stop loading regardless of outcome
+                setLoading(false);
             }
         };
         fetchQuestions();
     }, []);
 
-    const handleAnswer = (selectedAnswer) => {
-        console.log('Selected answer:', selectedAnswer); // Log the selected answer
+    const handleAnswer = async (selectedAnswer) => {
+        setAnsweredQuestions((prev) => prev + 1);
+
         if (selectedAnswer === questions[currentQuestion].correctAnswer) {
-            console.log('Correct answer selected'); // Log if the answer is correct
             setScore((prev) => prev + 1);
-        } else {
-            console.log('Incorrect answer selected'); // Log if the answer is incorrect
         }
-        setCurrentQuestion((prev) => prev + 1);
+
+        if (currentQuestion + 1 < questions.length) {
+            setCurrentQuestion((prev) => prev + 1);
+        } else {
+            setQuizCompleted(true);
+        }
     };
 
-    // Display loading or error messages
-    if (loading) {
-        console.log('Loading questions...');
-        return <div>Loading questions...</div>;
-    }
+    useEffect(() => {
+        if (quizCompleted) {
+            sendReward();
+        }
+    }, [quizCompleted]);
 
-    if (error) {
-        console.log('Error encountered:', error);
-        return <div>{error}</div>;
-    }
+    const sendReward = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            console.log('Sending rewards:', { correctAnswers: score, answeredQuestions });
 
-    // Render quiz or "Quiz Over!" message
+            const response = await axios.post('/api/player/reward', 
+                { correctAnswers: score, answeredQuestions }, 
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setRewards(response.data);
+            setEarnedCoins(score * 2); // 2 coins per correct answer
+            setEarnedExp(score * 5); // 5 EXP per correct answer
+        } catch (error) {
+            console.error('Error sending reward:', error);
+        }
+    };
+
+    if (loading) return <div>Loading questions...</div>;
+    if (error) return <div>{error}</div>;
+
     return (
-        <div>
-            {questions.length > 0 && currentQuestion < questions.length ? (
-                <div>
-                    <h3>{questions[currentQuestion].question}</h3>
-                    {questions[currentQuestion].options.map((option, index) => (
-                        <button key={index} onClick={() => handleAnswer(option)}>
-                            {option}
-                        </button>
-                    ))}
-                </div>
+        <div className="quiz-container">
+            {!quizCompleted ? (
+                questions.length > 0 && currentQuestion < questions.length ? (
+                    <div>
+                        <h3>{questions[currentQuestion].question}</h3>
+                        <div className="quiz-responses">
+                            {questions[currentQuestion].options.map((option, index) => (
+                                <button key={index} onClick={() => handleAnswer(option)}>
+                                    {option}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : null
             ) : (
-                <h2>Quiz Over! Your score is {score}/{questions.length}.</h2>
+                <div className="quiz-over">
+                    <h2>Quiz Over! Your score is {score}/{questions.length}.</h2>
+                    {rewards && (
+                        <div className="reward-container">
+                            <h3>Rewards Earned:</h3>
+                            <p>Coins Earned: {earnedCoins}</p>
+                            <p>EXP Earned: {earnedExp}</p>
+                        </div>
+                    )}
+                    <button className="home-button" onClick={() => window.location.href = '/home'}>Return to Home</button>
+                </div>
             )}
         </div>
     );

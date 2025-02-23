@@ -27,7 +27,6 @@ const UserSchema = new mongoose.Schema({
   nextLevelExp: { type: Number, default: 100 }, // EXP needed for next level
   status: { type: String, required: false },
   cards: { type: [cardSchema], default: [] }, // Cards array
-  exp: { type: Number, default: 0 },
   resetToken: String,
   resetTokenExpiration: Date,
   // New task progress tracking fields
@@ -37,7 +36,8 @@ const UserSchema = new mongoose.Schema({
     gamesWon: { type: Number, default: 0 }, // For "Win 3 games" task
     friendsInvited: { type: Number, default: 0 }, // For "Invite a friend" task
   },
-  avatar: { type: String, required: false }, 
+  answeredQuestions: { type: Number, default: 0 }, // Tracks total answered questions
+  correctAnswers: { type: Number, default: 0 }, // Tracks total correct answers
 });
 
 // Hash password before saving

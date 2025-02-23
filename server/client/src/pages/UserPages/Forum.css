@@ -1,41 +1,154 @@
+/* Forum Container */
 .forum-container {
-    padding: 20px;
-  }
-  
-  .create-post {
-    margin-bottom: 30px;
-  }
-  
-  .create-post input,
-  .create-post textarea {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 10px;
-  }
-  
-  .create-post button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .posts .post {
-    border: 1px solid #ddd;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.forum-container h1{
+  font-weight: bold;
+  font-size: large;
+}
+
+/* 🔍 Search Bar */
+.search-bar {
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Create Post Section */
+.create-post {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.create-post h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.create-post input,
+.create-post textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.create-post textarea {
+  height: 100px;
+}
+
+.create-post button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+  transition: background 0.3s ease;
+}
+
+.create-post button:hover {
+  background: #0056b3;
+}
+
+/* Posts Section */
+.posts {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.post {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.post h3 {
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+}
+
+.post p {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Comments Section */
+.comments {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.comments h4 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.comments p {
+  background: #f1f1f1;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.comments input {
+  width: calc(100% - 10px);
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.comments button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #28a745;
+  color: white;
+  margin-top: 5px;
+  transition: background 0.3s ease;
+}
+
+.comments button:hover {
+  background: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .forum-container {
     padding: 15px;
-    margin-bottom: 20px;
   }
-  
-  .comments input {
+
+  .create-post button {
     width: 100%;
-    padding: 5px;
-    margin-top: 10px;
   }
-  
-  .comments button {
-    margin-top: 5px;
-    padding: 5px 10px;
+
+  .post {
+    padding: 12px;
   }
-  
+}

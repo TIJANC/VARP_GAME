@@ -24,6 +24,7 @@ import TriviaBingo from './components/TriviaBingo';
 import InfectionChainBreaker from './components/InfectionChainBreaker';
 import AntibodyCatch from './components/AntibodyCatch';
 import Quiz from './components/dinamicQuiz';
+import CardGame from './pages/UserPages/CardGame';
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
             <Route path="/games/infection-chain-breaker" element={<InfectionChainBreaker />} />
             <Route path="/games/antibody-catch" element={<AntibodyCatch />} />
             <Route path="/games/dinamic-quiz" element={<Quiz />} />
+            <Route path="/games/card-game" element={<CardGame />} />
           </Route>
 
           {/* Admin Route with Role-Based Access */}

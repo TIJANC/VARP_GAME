@@ -113,15 +113,26 @@ const Profile = () => {
   };
 
   return (
-    <div>
-      <h1>Profile Page</h1>
+    <div className="profile-container">
+      <header>
+        <img
+          src="/Images/VARP_logo.png"
+          alt="Vaccine Awareness Logo"
+          className="logo"
+        />
+      </header>
 
       <div className="avatar-container">
-  <img
-    src={userInfo.avatar || 'default-avatar.png'}
-    alt="User Avatar"
-    className="avatar"
-  />
+      <img
+     style={{
+      backgroundImage: `url(${userInfo.avatar || ''})`
+    }}
+    className={`immagine ${
+      userInfo.avatar?.endsWith('Run.png') ? 'sprite-run' :
+      userInfo.avatar?.endsWith('Attack1.png') ? 'sprite-attack' :
+      'sprite-disguise'
+    }`}
+      />
 </div>
 
       <ul>
@@ -144,9 +155,9 @@ const Profile = () => {
           <strong>Scholarity:</strong> {userInfo.scholarity || 'Not provided'}
         </li>
       </ul>
-
+      <div className="edit-section">
       <button onClick={() => setIsModalOpen(true)}>Edit Profile</button>
-
+      </div>     
       <div className="invite-section">
         <h3>Invite a Friend</h3>
         <input
@@ -164,7 +175,7 @@ const Profile = () => {
             <h2>Edit Your Profile</h2>
             <form onSubmit={handleSubmit}>
               <div>
-                <label>Gender:</label>
+              <strong><label>Gender: </label></strong>
                 <input
                   type="text"
                   name="gender"
@@ -173,7 +184,7 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <label>Age:</label>
+                <strong><label>Age: </label></strong>
                 <input
                   type="number"
                   name="age"
@@ -182,7 +193,7 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <label>Birthplace:</label>
+              <strong><label>Birthplace: </label></strong>
                 <input
                   type="text"
                   name="birthplace"
@@ -191,7 +202,7 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <label>Scholarity:</label>
+              <strong><label>Scholarity: </label></strong>
                 <input
                   type="text"
                   name="scholarity"
@@ -200,7 +211,7 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <label>Select Avatar:</label>
+              <strong><label>Select Avatar: </label></strong>
                 <div className="avatar-options">
                   {avatarOptions.map((avatar, index) => {
                     const spriteClass =
@@ -233,19 +244,9 @@ const Profile = () => {
           </div>
         </div>
       )}
-
       <ActionNavbar
-        coins={userInfo.coins || 0}
-        navigate={(route) => (window.location.href = route)}
-        options={[
-          { label: 'Shop', route: '/shop', iconClass: 'la-store' },
-          { label: 'Forum', route: '/forum', iconClass: 'la-comments' },
-          { label: 'Home', route: '/home', iconClass: 'la-home' },
-          { label: 'Profile', route: '/profile', iconClass: 'la-user' },
-          { label: 'Map', route: '/map', iconClass: 'la-map' },
-        ]}
       />
-    </div>
+      </div>
   );
 };
 

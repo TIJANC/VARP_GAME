@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './ForgotPassword.css'
+import './ForgotPassword.css';
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
 
@@ -15,8 +16,14 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div>
-      <h2>Forgot Password</h2>
+      <div className="forgot-container">
+       <header>
+        <img
+          src="/Images/VARP_logo.png"
+          alt="Vaccine Awareness Logo"
+          className="logo"
+        />
+      </header>
       <form onSubmit={handleForgotPassword}>
         <input
           type="email"

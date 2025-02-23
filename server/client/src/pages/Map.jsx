@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import ActionNavbar from '../components/ActionNavbar';
 import { useNavigate } from 'react-router-dom';
+import './map.css';
 
 // Fix marker icon issues
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -65,6 +66,7 @@ const FlorenceMap = () => {
   };
 
   return (
+    <div className='Map-container'>
     <div style={{ height: '100vh', width: '100%' }}>
       {/* Map Container */}
       <MapContainer
@@ -122,6 +124,7 @@ const FlorenceMap = () => {
           { label: 'Map', route: '/map', iconClass: 'la-map' }, // Highlight current page
         ]}
       />
+    </div>
     </div>
   );
 };

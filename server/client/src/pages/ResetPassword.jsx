@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import './ResetPassword.css'
+import './ResetPassword.css';
+
 const ResetPassword = () => {
   const { token } = useParams();
   const [newPassword, setNewPassword] = useState('');
@@ -18,8 +19,14 @@ const ResetPassword = () => {
   };
 
   return (
-    <div>
-      <h2>Reset Password</h2>
+    <div className="reset-container">
+      <header>
+        <img
+          src="/Images/VARP_logo.png"
+          alt="Vaccine Awareness Logo"
+          className="logo"
+        />
+      </header>
       <form onSubmit={handleResetPassword}>
         <input
           type="password"

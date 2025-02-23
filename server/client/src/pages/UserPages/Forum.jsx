@@ -8,6 +8,7 @@ const Forum = () => {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState({ title: '', content: '' });
   const [comment, setComment] = useState('');
+  const [searchTerm, setSearchTerm] = useState(''); // Added state for search
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,58 +60,73 @@ const Forum = () => {
     }
   };
 
+  // Filter posts based on search term (case-insensitive)
+  const filteredPosts = posts.filter((post) =>
+    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.content.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="forum-container">
-      <h1>Forum</h1>
+    <div>
+      <div className="forum-container">
+        <h1>Forum</h1>
 
-      <div className="create-post">
-        <h2>Create a New Post</h2>
-        <input
-          type="text"
-          placeholder="Title"
-          value={newPost.title}
-          onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-        />
-        <textarea
-          placeholder="Content"
-          value={newPost.content}
-          onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-        />
-        <button onClick={handleCreatePost}>Post</button>
-      </div>
+        {/* 🔍 Search Bar */}
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search posts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-      <div className="posts">
-        {posts.map((post) => (
-          <div key={post._id} className="post">
-            <h3>{post.title}</h3>
-            <p>{post.content}</p>
-            <p><strong>By:</strong> {post.user?.username || 'Anonymous'}</p>
-            <div className="comments">
-              <h4>Comments</h4>
-              {post.comments.map((comment, index) => (
-                <p key={index}>{comment.comment}</p>
-              ))}
-              <input
-                type="text"
-                placeholder="Add a comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-              <button onClick={() => handleAddComment(post._id)}>Comment</button>
-            </div>
-          </div>
-        ))}
+        {/* Create Post Section */}
+        <div className="create-post">
+          <h2>Create a New Post</h2>
+          <input
+            type="text"
+            placeholder="Title"
+            value={newPost.title}
+            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+          />
+          <textarea
+            placeholder="Content"
+            value={newPost.content}
+            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+          />
+          <button onClick={handleCreatePost}>Post</button>
+        </div>
+
+        {/* Display Filtered Posts */}
+        <div className="posts">
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => (
+              <div key={post._id} className="post">
+                <h3>{post.title}</h3>
+                <p>{post.content}</p>
+                <p><strong>By:</strong> {post.user?.username || 'Anonymous'}</p>
+                <div className="comments">
+                  <h4>Comments</h4>
+                  {post.comments.map((comment, index) => (
+                    <p key={index}>{comment.comment}</p>
+                  ))}
+                  <input
+                    type="text"
+                    placeholder="Add a comment"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                  <button onClick={() => handleAddComment(post._id)}>Comment</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No posts found.</p>
+          )}
+        </div>
       </div>
-      <ActionNavbar
-        navigate={navigate}
-        options={[
-          { label: 'Shop', route: '/shop', iconClass: 'la-store' },
-          { label: 'Forum', route: '/forum', iconClass: 'la-comments' },
-          { label: 'Home', route: '/home', iconClass: 'la-home' },
-          { label: 'Profile', route: '/profile', iconClass: 'la-user' },
-          { label: 'Map', route: '/map', iconClass: 'la-map' },
-        ]}
-      />
+      <ActionNavbar />
     </div>
   );
 };
