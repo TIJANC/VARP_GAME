@@ -7,9 +7,10 @@ const vaccineData = [
         dataAutorizzazione: "2013",
         sviluppatori: "Sanofi Pasteur",
         patologiaDiInteresse: "Difterite, Tetano, Pertosse, Poliovirus, Epatite B, Haemophilus Influenzae B",
-        complicanze: "",
-        manufacturer: "Pfizer, Inc., and BioNTech",
-        doses: 2,
+        calendarioVaccinale: "2,4,10 mesi",
+        Obbligatorietà: "Si",
+        Posologia: "2 dosi ciclo primario (t0, 2 mesi) + richiamo dopo altri 6 mesi",
+        Somministrazione: "iniezione intramuscolare faccia antero-laterale della coscia o deltoide se > 15 mesi età",
     },
     {
         vaccineName: "Moderna",
