@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ActionNavbar from '../../components/ActionNavbar';
 import { Card, CardMedia, CardContent, Typography, Button } from '@mui/material';
+import { cardsData } from '../../assets/cardsData';
 
 const Shop = () => {
   const [userInfo, setUserInfo] = useState({
     coins: 0,
     currentLevel: 'Noob',
-    answeredQuestions: 0
+    answeredQuestions: 0,
   });
   const [cards, setCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
@@ -24,13 +25,20 @@ const Shop = () => {
         setUserInfo({
           coins: response.data.coins,
           currentLevel: response.data.currentLevel || 'Noob',
-          answeredQuestions: response.data.answeredQuestions || 0
+          answeredQuestions: response.data.answeredQuestions || 0,
         });
 
-        setCards(response.data.cards.map(card => ({
-          ...card,
-          image: getCardImage(card.id),
-        })));
+        // Merge the default card data with the user's unlock status from the backend.
+        const mergedCards = cardsData.map((defaultCard) => {
+          const userCard = response.data.cards.find(
+            (card) => card.id === defaultCard.id
+          );
+          return {
+            ...defaultCard,
+            isUnlocked: userCard ? userCard.isUnlocked : false,
+          };
+        });
+        setCards(mergedCards);
       } catch (error) {
         console.error('Error fetching shop data:', error);
         alert('Failed to fetch shop data. Please try again.');
@@ -40,30 +48,11 @@ const Shop = () => {
     fetchShopData();
   }, []);
 
-  const getCardImage = (cardId) => {
-    const cardImages = {
-      1: '/VaccineCards/Hexacima.png',
-      2: '/VaccineCards/Hexyon.png',
-      3: '/VaccineCards/Infanrix.png',
-      4: '/VaccineCards/Vaxelis.png',
-      5: '/VaccineCards/PolioBoostrix.png',
-      6: '/VaccineCards/PolioInfanrix.png',
-      7: '/VaccineCards/Tetravac.png',
-      8: '/VaccineCards/TriaxisPolio.png',
-      9: '/VaccineCards/Boostrix.png',
-      10: '/VaccineCards/Triaxis.png',
-      11: '/VaccineCards/Tribaccine.png',
-      12: '/VaccineCards/Diftetall.png',
-    };
-    return cardImages[cardId] || '/images/default-card.png';
-  };
-
   const unlockCard = async (card) => {
     if (card.isUnlocked) {
       alert('This card is already unlocked!');
       return;
     }
-
     const token = localStorage.getItem('token');
 
     try {
@@ -72,59 +61,106 @@ const Shop = () => {
         { cardId: card.id, method: card.unlockMethod },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (response.data.message) {
         alert(`${card.name} unlocked!`);
-        setUserInfo(prev => ({ ...prev, coins: response.data.coins }));
-        setCards(prev =>
-          prev.map(c => (c.id === card.id ? { ...c, isUnlocked: true } : c))
+        setUserInfo((prev) => ({ ...prev, coins: response.data.coins }));
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === card.id ? { ...c, isUnlocked: true } : c
+          )
         );
-        setSelectedCard(prev => prev ? { ...prev, isUnlocked: true } : prev);
+        if (selectedCard && selectedCard.id === card.id) {
+          setSelectedCard({ ...selectedCard, isUnlocked: true });
+        }
       }
     } catch (error) {
       console.error('Error unlocking card:', error);
-      alert(error.response?.data?.error || 'An error occurred while unlocking the card.');
+      alert(
+        error.response?.data?.error ||
+          'An error occurred while unlocking the card.'
+      );
     }
   };
 
   return (
-    <div className="shop-section">
-      <h1>Card Shop</h1>
-      <p>Coins: <strong>{userInfo.coins}</strong> | Level: <strong>{userInfo.currentLevel}</strong> | Answered Questions: <strong>{userInfo.answeredQuestions}</strong></p>
+    <div className="shop-section bg-gray-100 min-h-screen p-8">
+      <h1 className="text-3xl font-bold text-center mb-4">Card Shop</h1>
+      <p className="text-center text-lg mb-6">
+        Coins: <strong>{userInfo.coins}</strong> | Level:{' '}
+        <strong>{userInfo.currentLevel}</strong> | Answered Questions:{' '}
+        <strong>{userInfo.answeredQuestions}</strong>
+      </p>
 
-      {/* Grid layout with separate horizontal and vertical gaps */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-12 gap-y-20 mx-auto max-w-7xl">
+      {/* Grid layout for cards with increased spacing */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-18 gap-y-24 mx-auto max-w-7xl">
         {cards.map((card) => (
-          <Card key={card.id} className="shadow-xl border-2 cursor-pointer h-48" onClick={() => setSelectedCard(card)}>
+          <Card
+            key={card.id}
+            className="shadow-xl border-2 cursor-pointer h-32"
+            onClick={() => setSelectedCard(card)}
+          >
             <CardMedia
               component="img"
               image={card.image}
-              className="h-32 object-center object-cover"
+              className={`h-32 object-center object-cover ${
+                !card.isUnlocked ? 'filter blur-sm' : ''
+              }`}
             />
           </Card>
         ))}
       </div>
 
       {selectedCard && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" onClick={() => setSelectedCard(null)}>
-          <Card className="p-6 rounded-lg shadow-lg max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+          onClick={() => setSelectedCard(null)}
+        >
+          <Card
+            className="p-6 rounded-lg shadow-lg max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             {selectedCard.isUnlocked ? (
-              <CardMedia component="img" image={selectedCard.image} alt="Card" className="w-full" />
+              <CardMedia
+                component="img"
+                image={selectedCard.image}
+                alt="Card"
+                className="w-full"
+              />
             ) : (
               <div className="w-full h-48 bg-black"></div>
             )}
             <CardContent>
               <Typography align="center" color="textSecondary">
-                {selectedCard.isUnlocked ? 'Unlocked' : selectedCard.unlockMethod === 'coins' ? `Price: ${selectedCard.price} coins` :
-                 selectedCard.unlockMethod === 'task' ? `Task Required: ${selectedCard.task}` :
-                 selectedCard.unlockMethod === 'level' ? `Required Level: ${selectedCard.requiredLevel}` :
-                 selectedCard.unlockMethod === 'questions' ? `Requires ${selectedCard.requiredQuestions} answered questions` :
-                 ''}
+                {selectedCard.isUnlocked
+                  ? 'Unlocked'
+                  : selectedCard.unlockMethod === 'coins'
+                  ? `Price: ${selectedCard.price} coins`
+                  : selectedCard.unlockMethod === 'task'
+                  ? `Task Required: ${selectedCard.task}`
+                  : selectedCard.unlockMethod === 'level'
+                  ? `Required Level: ${selectedCard.requiredLevel}`
+                  : selectedCard.unlockMethod === 'questions'
+                  ? `Requires ${selectedCard.requiredQuestions} answered questions`
+                  : ''}
               </Typography>
               {!selectedCard.isUnlocked && (
-                <Button variant="contained" color="primary" fullWidth onClick={() => unlockCard(selectedCard)}>Unlock</Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={() => unlockCard(selectedCard)}
+                >
+                  Unlock
+                </Button>
               )}
-              <Button variant="contained" color="secondary" fullWidth onClick={() => setSelectedCard(null)}>Close</Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                onClick={() => setSelectedCard(null)}
+              >
+                Close
+              </Button>
             </CardContent>
           </Card>
         </div>

@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
   nextLevelExp: { type: Number, default: 100 }, // EXP needed for next level
   status: { type: String, required: false },
   cards: { type: [cardSchema], default: [] }, // Cards array
+  deck: {
+    vaccines: { type: [Number], default: [] }, // storing vaccine card IDs
+    viruses: { type: [Number], default: [] }    // storing virus card IDs
+  },
   resetToken: String,
   resetTokenExpiration: Date,
   // New task progress tracking fields

@@ -1,85 +1,45 @@
-/* Container Styling */
 .profile-container {
-  text-align: normal;
+  text-align: center;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  background-color: rgba(255, 255, 255, 0.9); /* Transparent overlay for readability */
+  background-color: rgba(255, 255, 255, 0.95);
+  min-height: 100vh;
   margin: 0 auto;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 100vw;
-  height: 100vh
 }
 
-/* Header Logo */
 .logo {
   width: 120px;
   margin-bottom: 20px;
 }
 
-/* Headline Styling */
-.profile-container h2 {
-  font-size: 2rem;
-  color: #0c0d0e;
-  margin-bottom: 10px;
-  font-weight: 10px;
+.avatar-container {
+  margin: 20px 0;
 }
 
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
 
-.profile-container ul{
-  width: 95%;
-  padding: 10px 0px;
+/* Edit Section */
+.edit-section {
+  margin: 20px 0;
+}
+
+/* Invite Section */
+.invite-section {
   margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: 5px;
-  align-items: center;
-  
-  }
+}
 
-
-
-
-
-
-    
-  .profile-container button:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-  }
-  
-  .profile-container button:active {
-    background-color: #004080;
-    transform: translateY(0);
-  }
-
-  @media (max-width: 768px) {
-    .profile-container {
-      text-align: normal;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 30px;
-      background-color: rgba(255, 255, 255, 0.9); /* Transparent overlay for readability */
-      margin: 5px auto;
-      border-radius: 5px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-    .profile-container form {
-    margin-left: 1%;
-    margin-top: 0px;
-    box-sizing: border-box;
-   
-    justify-content: center;
-    border-radius: 5px;
-    }
-  }
-
+.invite-section input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+  margin-right: 10px;
+}
 
 /* Modal Styling */
 .modal {
@@ -93,6 +53,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  overflow-y: auto; /* Allows scrolling on the modal if needed */
 }
 
 .modal-content {
@@ -100,187 +61,42 @@
   padding: 20px;
   border-radius: 8px;
   width: 400px;
+  max-height: 90vh; /* Limit the modal's height */
+  overflow-y: auto; /* Makes the content inside scrollable */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.modal-content form div {
-  margin-bottom: 15px;
-}
-
-.modal-content button {
-  margin-right: 10px;
-  padding: 5px 10px;
-  background-color: #577aa0;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Avatar Container Styling */
-.avatar-container {
-  text-align: center;
-  margin: 20px 0;
-}
-
-.avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #ddd;
-  transform: translate(-90%);
-  animation: infinite;
-}
-
 /* Avatar Options Styling */
-.avatar-option {
-  width: auto; /* Adjust dynamically based on sprite */
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  border: 2px solid transparent;
-  border-radius: 5px; /* Rounded corners for better aesthetics */
-  transition: border-color 0.3s ease;
-}
-
 .avatar-options {
   display: flex;
-  gap: 15px; /* Space between options */
-  justify-content: center;
   flex-wrap: wrap;
-  padding: 10px; /* Optional padding */
+  gap: 15px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.avatar-option {
+  width: 120px; /* Fixed width for consistency */
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 5px;
+  transition: border-color 0.3s ease;
 }
 
 .avatar-option.selected {
   border-color: gold;
 }
 
-/* Sprite Animation Styling */
-.avatar-sprite {
-  background-repeat: no-repeat;
-  overflow: hidden;
-  animation: play-sprite infinite 1s steps(1); /* Default animation, customize per sprite */
-}
-
-.sprite-run {
-  width: 86px; /* Frame width */
-  height: 72.5px; /* Frame height */
-  background-size: 688px 72.5px; /* Total sprite sheet dimensions */
-  animation: play-run 1s steps(8) infinite; /* 8 frames */  
-}
-
-@keyframes play-run {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: -688px 0; /* 86px * 8 frames */
-  }
-}
-
-.sprite-attack {
-  width: 86px; /* Frame width */
-  height: 86px; /* Frame height */
-  background-size: 430px 86px; /* Total sprite sheet dimensions */
-  animation: play-attack 1s steps(5) infinite; /* 5 frames */
-}
-
-@keyframes play-attack {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: -430px 0; /* 86px * 5 frames */
-  }
-}
-
-.sprite-disguise {
-  width: 86px; /* Frame width */
-  height: 80px; /* Frame height */
-  background-size: 774px 80px; /* Total sprite sheet dimensions */
-  animation: play-disguise 1s steps(9) infinite; /* 6 frames */
-}
-
-@keyframes play-disguise {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: -774px 0; /* 86px * 9 frames */
-  }
-}
-
-
-/* Invite Section Styling */
-.invite-section {
-  margin-top: 10px;
-  text-align: center;
-  width: auto;
-  margin: auto;
-}
-
-.edit-section {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 30%;
-  max-width: 150px;
-  background-color: #ffffff;
-  padding: 5px auto;
-}
-.edit-section h3 {
-  margin-bottom: 10px;
-}
-
-.edit-section input {
-  padding: 10px;
-  border: 1px solid #ccc;
+.character-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
   border-radius: 4px;
-  width: 200px;
-  margin-right: 10px;
 }
 
-.edit-section button {
-  padding: 5px 10px;
-  background-color: #577aa0;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.edit-section button:hover {
-  background-color: #0056b3;
-}
-
-
-
-.invite-section h3 {
-  margin-bottom: 10px;
-}
-
-.invite-section input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 200px;
-  margin-right: 10px;
-}
-
-.invite-section button {
-  padding: 10px 5px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.invite-section button:hover {
-  background-color: #0056b3;
+.character-description {
+  font-size: 0.85rem;
+  color: #555;
+  margin-top: 5px;
 }

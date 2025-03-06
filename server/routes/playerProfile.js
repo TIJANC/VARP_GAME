@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authenticateUser = require('../middleware/auth.js'); // Import the middleware
 const User = require('../models/User'); // Ensure the User model path is correct
+const { cardsData } = require('../utils/cardsData.js');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
@@ -97,145 +98,85 @@ router.post('/unlock-card', authenticateUser, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // Ensure the user's cards property exists and is an array.
     if (!Array.isArray(user.cards)) {
       user.cards = [];
     }
 
-    let card = user.cards.find((c) => c.id === cardId);
-
-    const defaultCards = [
-      { id: 1, name: 'Card 1', unlockMethod: 'coins', price: 10 },
-      { id: 2, name: 'Card 2', unlockMethod: 'task', task: 'Complete profile' },
-      { id: 3, name: 'Card 3', unlockMethod: 'coins', price: 15 },
-      { id: 4, name: 'Card 4', unlockMethod: 'coins', price: 15 },
-      { id: 5, name: 'Card 5', unlockMethod: 'coins', price: 20 },
-      { id: 6, name: 'Card 6', unlockMethod: 'coins', price: 20 },
-      { id: 7, name: 'Card 7', unlockMethod: 'coins', price: 25 },
-      { id: 8, name: 'Card 8', unlockMethod: 'task', task: 'Invite a friend' },
-      { id: 9, name: 'Card 9', unlockMethod: 'coins', price: 30 },
-      { id: 10, name: 'Card 10', unlockMethod: 'level', requiredLevel: 'noob' },
-      { id: 11, name: 'Card 11', unlockMethod: 'level', requiredLevel: 'senior' },
-      { id: 12, name: 'Card 12', unlockMethod: 'questions', requiredQuestions: 50 },
-
-      { id: 13, name: 'Card 13', unlockMethod: 'coins', price: 10 },
-      { id: 14, name: 'Card 14', unlockMethod: 'task', task: 'Complete profile' },
-      { id: 15, name: 'Card 15', unlockMethod: 'coins', price: 15 },
-      { id: 16, name: 'Card 16', unlockMethod: 'coins', price: 15 },
-      { id: 17, name: 'Card 17', unlockMethod: 'coins', price: 20 },
-      { id: 18, name: 'Card 18', unlockMethod: 'coins', price: 20 },
-      { id: 19, name: 'Card 19', unlockMethod: 'coins', price: 25 },
-      { id: 20, name: 'Card 20', unlockMethod: 'task', task: 'Invite a friend' },
-      { id: 21, name: 'Card 21', unlockMethod: 'coins', price: 30 },
-      { id: 22, name: 'Card 22', unlockMethod: 'level', requiredLevel: 'senior' },
-      { id: 23, name: 'Card 23', unlockMethod: 'level', requiredLevel: 'senior' },
-      { id: 24, name: 'Card 24', unlockMethod: 'questions', requiredQuestions: 50 },
-
-    ];
-
-    const defaultCard = defaultCards.find((c) => c.id === cardId);
+    // Look up default card data from the utils file.
+    const defaultCard = cardsData.find((c) => c.id === cardId);
     if (!defaultCard) {
       return res.status(400).json({ error: 'Invalid card ID' });
     }
 
+    // Try to find the card in the user's collection.
+    let card = user.cards.find((c) => c.id === cardId);
     if (!card) {
-      // Create a new card entry and add it to the user’s collection
-      card = { id: cardId, isUnlocked: false, ...defaultCard };
+      // If not found, create a new card entry with the default data.
+      card = { id: cardId, ...defaultCard, isUnlocked: false };
       user.cards.push(card);
     }
 
-    // **Ensure card is actually locked before unlocking it**
+    // Check if the card is already unlocked.
     if (card.isUnlocked) {
       return res.status(400).json({ error: 'Card already unlocked' });
     }
 
-    // 🔹🔹🔹 Validate unlock conditions BEFORE unlocking 🔹🔹🔹
-
-    if (method === 'coins') {
-      if (user.coins < defaultCard.price) {
+    // Validate unlock conditions BEFORE unlocking.
+    if (defaultCard.unlockMethod === 'coins') {
+      const price = defaultCard.price || 10;
+      if (user.coins < price) {
         return res.status(400).json({ error: 'Not enough coins' });
       }
-      user.coins -= defaultCard.price;
-    } 
-    else if (method === 'task') {
+      user.coins -= price;
+    } else if (defaultCard.unlockMethod === 'task') {
       const taskCompleted = {
-        'Complete profile': user.taskProgress.profileCompleted,
-        'Invite a friend': user.taskProgress.friendsInvited >= 1,
+        'Complete profile': user.taskProgress?.profileCompleted,
+        'Invite a friend': user.taskProgress?.friendsInvited >= 1,
       }[defaultCard.task];
-
       if (!taskCompleted) {
         return res.status(400).json({ error: `You must complete the task: ${defaultCard.task}` });
       }
-    } 
-    else if (method === 'level') {
+    } else if (defaultCard.unlockMethod === 'level') {
       if (!defaultCard.requiredLevel || user.currentLevel !== defaultCard.requiredLevel) {
         return res.status(400).json({ error: `You need to be level ${defaultCard.requiredLevel} to unlock this card.` });
       }
-    } 
-    else if (method === 'questions') {
+    } else if (defaultCard.unlockMethod === 'questions') {
       if (!defaultCard.requiredQuestions || user.answeredQuestions < defaultCard.requiredQuestions) {
         return res.status(400).json({ error: `You need to answer at least ${defaultCard.requiredQuestions} questions to unlock this card.` });
       }
-    } 
-    else {
+    } else {
       return res.status(400).json({ error: 'Invalid unlock method' });
     }
 
-    // ✅ After passing the unlock condition, unlock the card
+    // All conditions met—unlock the card.
     card.isUnlocked = true;
-    user.markModified('cards'); // Ensure MongoDB updates the array
+    user.markModified('cards'); // Ensure MongoDB registers the change.
     await user.save();
 
     res.json({ message: 'Card unlocked successfully!', coins: user.coins });
-    
   } catch (error) {
     console.error('Error unlocking card:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-
 router.get('/shop', authenticateUser, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('coins taskProgress cards currentLevel answeredQuestions');
+    const user = await User.findById(req.userId).select(
+      'coins taskProgress cards currentLevel answeredQuestions'
+    );
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const defaultCards = [
-      { id: 1, name: 'Card 1', unlockMethod: 'coins', price: 10 },
-      { id: 2, name: 'Card 2', unlockMethod: 'task', task: 'Complete profile' },
-      { id: 3, name: 'Card 3', unlockMethod: 'coins', price: 15 },
-      { id: 4, name: 'Card 4', unlockMethod: 'coins', price: 15 },
-      { id: 5, name: 'Card 5', unlockMethod: 'coins', price: 20 },
-      { id: 6, name: 'Card 6', unlockMethod: 'coins', price: 20 },
-      { id: 7, name: 'Card 7', unlockMethod: 'coins', price: 25 },
-      { id: 8, name: 'Card 8', unlockMethod: 'task', task: 'Invite a friend' },
-      { id: 9, name: 'Card 9', unlockMethod: 'coins', price: 30 },
-      { id: 10, name: 'Card 10', unlockMethod: 'level', requiredLevel: 'noob' },
-      { id: 11, name: 'Card 11', unlockMethod: 'level', requiredLevel: 'senior' },
-      { id: 12, name: 'Card 12', unlockMethod: 'questions', requiredQuestions: 50 },
-
-      { id: 13, name: 'Card 13', unlockMethod: 'coins', price: 10 },
-      { id: 14, name: 'Card 14', unlockMethod: 'task', task: 'Complete profile' },
-      { id: 15, name: 'Card 15', unlockMethod: 'coins', price: 15 },
-      { id: 16, name: 'Card 16', unlockMethod: 'coins', price: 15 },
-      { id: 17, name: 'Card 17', unlockMethod: 'coins', price: 20 },
-      { id: 18, name: 'Card 18', unlockMethod: 'coins', price: 20 },
-      { id: 19, name: 'Card 19', unlockMethod: 'coins', price: 25 },
-      { id: 20, name: 'Card 20', unlockMethod: 'task', task: 'Invite a friend' },
-      { id: 21, name: 'Card 21', unlockMethod: 'coins', price: 30 },
-      { id: 22, name: 'Card 22', unlockMethod: 'level', requiredLevel: 'senior' },
-      { id: 23, name: 'Card 23', unlockMethod: 'level', requiredLevel: 'senior' },
-      { id: 24, name: 'Card 24', unlockMethod: 'questions', requiredQuestions: 50 },
-
-    ];
-
-    // Create a merged list of cards with the user's unlock status
-    const mergedCards = defaultCards.map((defaultCard) => {
+    // Merge the default card definitions from cardsData with the user's unlock status
+    const mergedCards = cardsData.map((defaultCard) => {
+      // Look for a matching card in the user's collection
       const userCard = user.cards?.find((card) => card.id === defaultCard.id);
       return {
         ...defaultCard,
-        isUnlocked: userCard?.isUnlocked || false, // Ensure proper unlock state
+        isUnlocked: userCard ? userCard.isUnlocked : false, // Use the user's status if found
       };
-    });    
+    });
 
     res.json({
       coins: user.coins,
@@ -249,7 +190,6 @@ router.get('/shop', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 router.post('/reward', authenticateUser, async (req, res) => {
   try {
     let { correctAnswers, answeredQuestions } = req.body;
@@ -315,6 +255,46 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER, // Your email address
     pass: process.env.APP_PASS,   // App-specific password
   },
+});
+
+// Route to post users deck
+router.post('/deck', authenticateUser, async (req, res) => {
+  try {
+    const { vaccines, viruses } = req.body.deck;
+    // Validate the deck structure
+    if (!Array.isArray(vaccines) || !Array.isArray(viruses)) {
+      return res.status(400).json({ error: 'Invalid deck format' });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Update the deck field
+    user.deck = { vaccines, viruses };
+    await user.save();
+
+    res.json({ message: 'Deck saved successfully!', deck: user.deck });
+  } catch (error) {
+    console.error('Error saving deck:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route to retrieve the user's deck
+router.get('/deck', authenticateUser, async (req, res) => {
+  try {
+    // Find the user and select only the deck field.
+    const user = await User.findById(req.userId).select('deck');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Return the deck information
+    res.json({ deck: user.deck });
+  } catch (error) {
+    console.error('Error retrieving deck:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Invite route

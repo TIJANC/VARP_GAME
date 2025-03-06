@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import ActionNavbar from '../../components/ActionNavbar';
+import { cardsData } from '../../assets/cardsData';
 
 const DeckBuilder = () => {
+  const navigate = useNavigate();
   const [unlockedCards, setUnlockedCards] = useState([]);
   const [selectedVaccines, setSelectedVaccines] = useState([]);
   const [selectedViruses, setSelectedViruses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch shop data and filter unlocked cards
+  // Fetch unlocked cards from the shop endpoint
   useEffect(() => {
     const fetchUnlockedCards = async () => {
       try {
@@ -31,28 +34,9 @@ const DeckBuilder = () => {
     fetchUnlockedCards();
   }, []);
 
-  // Reuse the same getCardImage function from your shop page
-  const getCardImage = (cardId) => {
-    const cardImages = {
-      1: '/VaccineCards/Hexacima.png',
-      2: '/VaccineCards/Hexyon.png',
-      3: '/VaccineCards/Infanrix.png',
-      4: '/VaccineCards/Vaxelis.png',
-      5: '/VaccineCards/PolioBoostrix.png',
-      6: '/VaccineCards/PolioInfanrix.png',
-      7: '/VaccineCards/Tetravac.png',
-      8: '/VaccineCards/TriaxisPolio.png',
-      9: '/VaccineCards/Boostrix.png',
-      10: '/VaccineCards/Triaxis.png',
-      11: '/VaccineCards/Tribaccine.png',
-      12: '/VaccineCards/Diftetall.png',
-    };
-    return cardImages[cardId] || '/images/default-card.png';
-  };
-
-  // For this example, assume vaccine cards have IDs < 100 and virus cards have IDs >= 100.
-  const isVaccine = (card) => card.id < 100;
-  const isVirus = (card) => card.id >= 100;
+  // Use the cardsData's type field to filter vaccine and virus cards.
+  const isVaccine = (card) => card.type === 'vaccine';
+  const isVirus = (card) => card.type === 'virus';
 
   const toggleSelection = (card) => {
     if (isVaccine(card)) {
@@ -78,86 +62,113 @@ const DeckBuilder = () => {
     }
   };
 
-  const handleSubmitDeck = () => {
+  // Create deck object from selected cards.
+  const createDeck = () => ({
+    vaccines: selectedVaccines.map(card => card.id),
+    viruses: selectedViruses.map(card => card.id),
+  });
+
+  // Save the deck to the backend.
+  const handleSaveDeck = async () => {
     if (selectedVaccines.length !== 5 || selectedViruses.length !== 10) {
       alert('Please select exactly 5 vaccine cards and 10 virus cards.');
       return;
     }
-    
-    const deck = {
-      vaccines: selectedVaccines.map(card => card.id),
-      viruses: selectedViruses.map(card => card.id),
-    };
-    
-    console.log('Deck submitted:', deck);
-    // Call your backend API to submit the deck for a battle, if needed.
+    const deck = createDeck();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        '/api/player/deck',
+        { deck },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Error saving deck:', error);
+      alert(error.response?.data?.error || 'Failed to save deck.');
+    }
   };
 
-  if (loading) return <div>Loading unlocked cards...</div>;
-  if (error) return <div>{error}</div>;
+  // Battle Now button just navigates to the PvE battle page.
+  const handleBattleNow = () => {
+    if (selectedVaccines.length !== 3 || selectedViruses.length !== 3) {
+      alert('Please select exactly 5 vaccine cards and 10 virus cards.');
+      return;
+    }
+    navigate('/games/PvE-battle');
+  };
+
+  if (loading) return <div className="text-center mt-8 text-xl">Loading unlocked cards...</div>;
+  if (error) return <div className="text-center mt-8 text-red-500 text-xl">{error}</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Deck Builder</h1>
+    <div className="p-8">
+      <h1 className="text-3xl font-bold text-center mb-6">Deck Builder</h1>
       
-      <section>
-        <h2>Select 5 Vaccine Cards</h2>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Select 5 Vaccine Cards</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {unlockedCards.filter(isVaccine).map(card => (
             <div
               key={card.id}
-              style={{
-                border: selectedVaccines.find(c => c.id === card.id) ? '2px solid green' : '1px solid #ccc',
-                padding: '10px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                textAlign: 'center'
-              }}
+              className={`border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
+                selectedVaccines.find(c => c.id === card.id)
+                  ? "border-green-500"
+                  : "border-gray-300"
+              }`}
               onClick={() => toggleSelection(card)}
             >
               <img
-                src={card.image || getCardImage(card.id)}
+                src={card.image}
                 alt={card.name}
-                style={{ width: '100px', height: 'auto' }}
+                className="w-24 h-auto mx-auto"
               />
-              <p>{card.name}</p>
+              <p className="mt-2 text-sm">{card.name}</p>
             </div>
           ))}
         </div>
       </section>
       
-      <section style={{ marginTop: '20px' }}>
-        <h2>Select 10 Virus Cards</h2>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Select 10 Virus Cards</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {unlockedCards.filter(isVirus).map(card => (
             <div
               key={card.id}
-              style={{
-                border: selectedViruses.find(c => c.id === card.id) ? '2px solid green' : '1px solid #ccc',
-                padding: '10px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                textAlign: 'center'
-              }}
+              className={`border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
+                selectedViruses.find(c => c.id === card.id)
+                  ? "border-green-500"
+                  : "border-gray-300"
+              }`}
               onClick={() => toggleSelection(card)}
             >
               <img
-                src={card.image || getCardImage(card.id)}
+                src={card.image}
                 alt={card.name}
-                style={{ width: '100px', height: 'auto' }}
+                className="w-24 h-auto mx-auto"
               />
-              <p>{card.name}</p>
+              <p className="mt-2 text-sm">{card.name}</p>
             </div>
           ))}
         </div>
       </section>
       
-      <div style={{ marginTop: '30px' }}>
-        <button onClick={handleSubmitDeck} style={{ padding: '10px 20px', fontSize: '1rem' }}>
-          Submit Deck
+      <div className="text-center mt-8 space-x-4">
+        <button
+          onClick={handleSaveDeck}
+          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Save Deck
+        </button>
+        <button
+          onClick={handleBattleNow}
+          className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Battle Now
         </button>
       </div>
-      <ActionNavbar/>
+      
+      <ActionNavbar />
     </div>
   );
 };
