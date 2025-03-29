@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://VARP.onrender.com', // Backend server URL
+        target: 'https://varp.onrender.com', // Backend server URL
         changeOrigin: true,
         secure: false,
       },
