@@ -17,20 +17,33 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // Create and save new user
+    // 1) Create new user in memory (NOT saved to DB yet)
     const user = new User({ username, email, password });
+    
+    // 2) Add base set cards with quantity=1
+    const baseSetIds = [16, 30, 37, 54, 59, 71, 99, 100];
+    baseSetIds.forEach((cardId) => {
+      user.cards.push({ id: cardId, quantity: 1 });
+    });
+
+    // 3) Save user to database (hashing runs in pre('save') hook)
     await user.save();
 
-    // Generate verification token
-    const verificationToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // 4) Generate verification token (for email verification)
+    const verificationToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-    // Send verification email
+    // 5) Send verification email
     try {
       sendVerificationEmail(email, verificationToken);
     } catch (err) {
       console.error('Error sending verification email:', err);
     }
 
+    // 6) Respond to client
     res.status(201).json({ message: 'User registered, please verify your email.' });
   } catch (error) {
     console.error('Registration error:', error);

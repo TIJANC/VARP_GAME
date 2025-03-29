@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import ActionNavbar from '../../components/ActionNavbar';
 import './Profile.css';
@@ -12,29 +12,34 @@ const Profile = () => {
     age: '',
     birthplace: '',
     scholarity: '',
-    avatar: '',
+    avatar: '', // This will now store the character class, e.g. "knight"
   });
 
-  // Hardcoded avatar options with image path and description
+  // Avatar options now store a character class and a preview image.
   const avatarOptions = [
     {
-      image: '/Characters/knight1.png',
+      class: "knight",
+      preview: '/Characters/knight1.png',
       description: "Knight: A valiant warrior combining chivalry with modern technology.",
     },
     {
-      image: '/Characters/archer1.png',
+      class: "archer",
+      preview: '/Characters/archer1.png',
       description: "Archer: A master marksman with enhanced precision and agility.",
     },
     {
-      image: '/Characters/rogue1.png',
+      class: "rogue",
+      preview: '/Characters/rogue1.png',
       description: "Rogue: A stealthy infiltrator skilled in unconventional tactics.",
     },
     {
-      image: '/Characters/engineer1.png',
+      class: "engineer",
+      preview: '/Characters/engineer1.png',
       description: "Engineer: A brilliant inventor who builds advanced contraptions.",
     },
     {
-      image: '/Characters/wizard1.png',
+      class: "wizard",
+      preview: '/Characters/wizard1.png',
       description: "Wizard: A mystic who blends ancient magic with scientific insight.",
     },
   ];
@@ -66,14 +71,55 @@ const Profile = () => {
     fetchUserInfo();
   }, []);
 
+  // Helper function to determine which image to display.
+  // For example, for a knight, if the user has low EXP (or level "noob" or "amateur"), show knight1.
+  // If the user is higher level, show knight2.
+  const getProfileCharacterImage = () => {
+    if (userInfo.avatar === 'knight') {
+      // Example: if currentLevel is "noob" or "amateur", use knight1, else knight2.
+      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
+        return '/Characters/knight1.png';
+      } else {
+        return '/Characters/knight2.png';
+      }
+    } else if (userInfo.avatar === 'archer') {
+      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
+        return '/Characters/archer1.png';
+      } else {
+        return '/Characters/archer2.png';
+      }
+    } else if (userInfo.avatar === 'rogue') {
+      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
+        return '/Characters/rogue1.png';
+      } else {
+        return '/Characters/rogue2.png';
+      }
+    } else if (userInfo.avatar === 'engineer') {
+      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
+        return '/Characters/engineer1.png';
+      } else {
+        return '/Characters/engineer2.png';
+      }
+    } else if (userInfo.avatar === 'wizard') {
+      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
+        return '/Characters/wizard1.png';
+      } else {
+        return '/Characters/wizard2.png';
+      }
+    }
+    // Fallback image
+    return '/Images/default-avatar.png';
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAvatarSelect = (avatar) => {
-    setSelectedAvatar(avatar.image);
-    setFormData(prev => ({ ...prev, avatar: avatar.image }));
+  // When selecting an avatar, we now store the character class.
+  const handleAvatarSelect = (option) => {
+    setSelectedAvatar(option.class);
+    setFormData(prev => ({ ...prev, avatar: option.class }));
   };
 
   const handleSubmit = async (e) => {
@@ -116,41 +162,44 @@ const Profile = () => {
   };
 
   return (
-    <div className="profile-container">
+    <div className="profile-page-container">
       <header>
         <img src="/Images/VARP_logo.png" alt="Vaccine Awareness Logo" className="logo" />
       </header>
 
-      <div className="avatar-container">
-        <img
-          src={userInfo.avatar || 'default-avatar.png'}
-          alt="User Avatar"
-          className="avatar"
-        />
-      </div>
+      <div className="profile-content">
+        {/* Use the helper to render the appropriate avatar image */}
+        <div className="avatar-container">
+          <img
+            src={getProfileCharacterImage()}
+            alt="User Avatar"
+            className="avatar"
+          />
+        </div>
 
-      <ul>
-        <li><strong>Username:</strong> {userInfo.username || 'Not provided'}</li>
-        <li><strong>Email:</strong> {userInfo.email || 'Not provided'}</li>
-        <li><strong>Gender:</strong> {userInfo.gender || 'Not provided'}</li>
-        <li><strong>Age:</strong> {userInfo.age || 'Not provided'}</li>
-        <li><strong>Birthplace:</strong> {userInfo.birthplace || 'Not provided'}</li>
-        <li><strong>Scholarity:</strong> {userInfo.scholarity || 'Not provided'}</li>
-      </ul>
+        <ul className="profile-info">
+          <li><strong>Username:</strong> {userInfo.username || 'Not provided'}</li>
+          <li><strong>Email:</strong> {userInfo.email || 'Not provided'}</li>
+          <li><strong>Gender:</strong> {userInfo.gender || 'Not provided'}</li>
+          <li><strong>Age:</strong> {userInfo.age || 'Not provided'}</li>
+          <li><strong>Birthplace:</strong> {userInfo.birthplace || 'Not provided'}</li>
+          <li><strong>Scholarity:</strong> {userInfo.scholarity || 'Not provided'}</li>
+        </ul>
 
-      <div className="edit-section">
-        <button onClick={() => setIsModalOpen(true)}>Edit Profile</button>
-      </div>
+        <div className="edit-section">
+          <button onClick={() => setIsModalOpen(true)}>Edit Profile</button>
+        </div>
 
-      <div className="invite-section">
-        <h3>Invite a Friend</h3>
-        <input
-          type="email"
-          placeholder="Enter friend's email"
-          value={inviteEmail}
-          onChange={(e) => setInviteEmail(e.target.value)}
-        />
-        <button onClick={handleInvite}>Send Invitation</button>
+        <div className="invite-section">
+          <h3>Invite a Friend</h3>
+          <input
+            type="email"
+            placeholder="Enter friend's email"
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+          />
+          <button onClick={handleInvite}>Send Invitation</button>
+        </div>
       </div>
 
       {isModalOpen && (
@@ -177,18 +226,18 @@ const Profile = () => {
               <div>
                 <strong><label>Select Character: </label></strong>
                 <div className="avatar-options">
-                  {avatarOptions.map((avatar, index) => (
+                  {avatarOptions.map((option, index) => (
                     <div
                       key={index}
-                      className={`avatar-option ${selectedAvatar === avatar.image ? 'selected' : ''}`}
-                      onClick={() => handleAvatarSelect(avatar)}
+                      className={`avatar-option ${selectedAvatar === option.class ? 'selected' : ''}`}
+                      onClick={() => handleAvatarSelect(option)}
                     >
                       <img
-                        src={avatar.image}
-                        alt={`Character option ${index + 1}`}
+                        src={option.preview}
+                        alt={option.description}
                         className="character-image"
                       />
-                      <p className="character-description">{avatar.description}</p>
+                      <p className="character-description">{option.description}</p>
                     </div>
                   ))}
                 </div>

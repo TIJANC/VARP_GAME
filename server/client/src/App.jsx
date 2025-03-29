@@ -14,6 +14,7 @@ import Shop from './pages/UserPages/Shop'
 import Profile from './pages/UserPages/Profile';
 import FlorenceMap from './pages/Map'; 
 import Forum from './pages/UserPages/Forum';
+import TradeCenter from './pages/UserPages/TradeCenter';
 // GAMES
 import MemoryGame from './components/MemoryGame';
 import QuizGame from './components/QuizGame';
@@ -57,6 +58,7 @@ function App() {
             <Route path="/games/dinamic-quiz" element={<Quiz />} />
             <Route path="/games/card-game" element={<CardGame />} />
             <Route path="/games/PvE-battle" element={<PvEBattle />} />
+            <Route path="/trade-center" element={<TradeCenter />} />
           </Route>
 
           {/* Admin Route with Role-Based Access */}

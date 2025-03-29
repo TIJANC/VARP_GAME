@@ -1,15 +1,19 @@
+// routes/player.js (example name)
 const express = require('express');
 const router = express.Router();
-const authenticateUser = require('../middleware/auth.js'); // Import the middleware
-const User = require('../models/User'); // Ensure the User model path is correct
+const authenticateUser = require('../middleware/auth.js');
+const User = require('../models/User');
 const { cardsData } = require('../utils/cardsData.js');
 const nodemailer = require('nodemailer');
+const { pickCard } = require('../utils/pickCard');
+const rarityToPoints = require('../utils/rarityToPoints.js');
+const Trade = require('../models/Trade')
+
 require('dotenv').config();
 
 // Fetch User Profile
 router.get('/profile', authenticateUser, async (req, res) => {
   try {
-    // Include the avatar field in the selected fields
     const user = await User.findById(req.userId).select(
       'username email gender age birthplace scholarity coins exp avatar currentLevel nextLevelExp'
     );
@@ -24,7 +28,7 @@ router.get('/profile', authenticateUser, async (req, res) => {
       scholarity: user.scholarity,
       coins: user.coins,
       exp: user.exp,
-      avatar: user.avatar, // Ensure avatar is part of the response
+      avatar: user.avatar,
       currentLevel: user.currentLevel,
       nextLevelExp: user.nextLevelExp,
     });
@@ -39,31 +43,26 @@ router.post('/update-profile', authenticateUser, async (req, res) => {
   try {
     const { gender, age, birthplace, scholarity, avatar } = req.body;
 
-    // Validate inputs
     if (!gender || !age || !birthplace || !scholarity) {
       return res.status(400).json({ error: 'All fields are required to complete the profile.' });
     }
 
-    // Find user
     const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    // Update profile fields
     user.gender = gender;
     user.age = age;
     user.birthplace = birthplace;
     user.scholarity = scholarity;
     user.avatar = avatar;
 
-    // Mark profileCompleted task as true
-    user.taskProgress.profileCompleted = true;
+    // Previously we had: user.taskProgress.profileCompleted = true;
+    // Now removed, since taskProgress no longer exists.
 
-    // Save updated user
     await user.save();
-
-    res.json(user); // Return the updated user
+    res.json(user);
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ error: 'Internal server error.' });
@@ -72,15 +71,12 @@ router.post('/update-profile', authenticateUser, async (req, res) => {
 
 router.get('/home', authenticateUser, async (req, res) => {
   try {
-    // Include the avatar field in the selected fields
-    const user = await User.findById(req.userId).select(
-      'username'
-    );
+    const user = await User.findById(req.userId).select('username avatar');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     res.json({
       username: user.username,
-      avatar: user.avatar, // Ensure avatar is part of the response
+      avatar: user.avatar,
     });
   } catch (error) {
     console.error('Error fetching user Username:', error);
@@ -88,99 +84,30 @@ router.get('/home', authenticateUser, async (req, res) => {
   }
 });
 
-
-// unlock-card route
-router.post('/unlock-card', authenticateUser, async (req, res) => {
-  try {
-    const { cardId, method } = req.body;
-    console.log('Unlock request received:', { cardId, method });
-
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // Ensure the user's cards property exists and is an array.
-    if (!Array.isArray(user.cards)) {
-      user.cards = [];
-    }
-
-    // Look up default card data from the utils file.
-    const defaultCard = cardsData.find((c) => c.id === cardId);
-    if (!defaultCard) {
-      return res.status(400).json({ error: 'Invalid card ID' });
-    }
-
-    // Try to find the card in the user's collection.
-    let card = user.cards.find((c) => c.id === cardId);
-    if (!card) {
-      // If not found, create a new card entry with the default data.
-      card = { id: cardId, ...defaultCard, isUnlocked: false };
-      user.cards.push(card);
-    }
-
-    // Check if the card is already unlocked.
-    if (card.isUnlocked) {
-      return res.status(400).json({ error: 'Card already unlocked' });
-    }
-
-    // Validate unlock conditions BEFORE unlocking.
-    if (defaultCard.unlockMethod === 'coins') {
-      const price = defaultCard.price || 10;
-      if (user.coins < price) {
-        return res.status(400).json({ error: 'Not enough coins' });
-      }
-      user.coins -= price;
-    } else if (defaultCard.unlockMethod === 'task') {
-      const taskCompleted = {
-        'Complete profile': user.taskProgress?.profileCompleted,
-        'Invite a friend': user.taskProgress?.friendsInvited >= 1,
-      }[defaultCard.task];
-      if (!taskCompleted) {
-        return res.status(400).json({ error: `You must complete the task: ${defaultCard.task}` });
-      }
-    } else if (defaultCard.unlockMethod === 'level') {
-      if (!defaultCard.requiredLevel || user.currentLevel !== defaultCard.requiredLevel) {
-        return res.status(400).json({ error: `You need to be level ${defaultCard.requiredLevel} to unlock this card.` });
-      }
-    } else if (defaultCard.unlockMethod === 'questions') {
-      if (!defaultCard.requiredQuestions || user.answeredQuestions < defaultCard.requiredQuestions) {
-        return res.status(400).json({ error: `You need to answer at least ${defaultCard.requiredQuestions} questions to unlock this card.` });
-      }
-    } else {
-      return res.status(400).json({ error: 'Invalid unlock method' });
-    }
-
-    // All conditions met—unlock the card.
-    card.isUnlocked = true;
-    user.markModified('cards'); // Ensure MongoDB registers the change.
-    await user.save();
-
-    res.json({ message: 'Card unlocked successfully!', coins: user.coins });
-  } catch (error) {
-    console.error('Error unlocking card:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
+// GET /shop
 router.get('/shop', authenticateUser, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select(
-      'coins taskProgress cards currentLevel answeredQuestions'
+      'coins cards currentLevel answeredQuestions'
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Merge the default card definitions from cardsData with the user's unlock status
+    // Merge the default card definitions from cardsData with the user's inventory
     const mergedCards = cardsData.map((defaultCard) => {
-      // Look for a matching card in the user's collection
-      const userCard = user.cards?.find((card) => card.id === defaultCard.id);
+      const userCard = user.cards?.find((uc) => uc.id === defaultCard.id);
+      const quantity = userCard ? userCard.quantity : 0;
+      const isUnlocked = quantity > 0;
+
       return {
         ...defaultCard,
-        isUnlocked: userCard ? userCard.isUnlocked : false, // Use the user's status if found
+        quantity,
+        isUnlocked,
       };
     });
 
+    // Removed: profileCompleted from response
     res.json({
       coins: user.coins,
-      profileCompleted: user.taskProgress.profileCompleted,
       currentLevel: user.currentLevel,
       answeredQuestions: user.answeredQuestions,
       cards: mergedCards,
@@ -190,33 +117,26 @@ router.get('/shop', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 router.post('/reward', authenticateUser, async (req, res) => {
   try {
     let { correctAnswers, answeredQuestions } = req.body;
-
-    console.log('Received data:', { correctAnswers, answeredQuestions });
-
-    // Ensure values are numbers, default to 0 if missing
     correctAnswers = Number(correctAnswers) || 0;
     answeredQuestions = Number(answeredQuestions) || 0;
 
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Define level progression
     const levels = { noob: 100, amateur: 200, senior: 400, veteran: 800, master: 1600 };
 
-    // Calculate rewards
     const expReward = correctAnswers * 5;
     const coinReward = correctAnswers * 2;
 
-    // Update user stats
     user.exp += expReward;
     user.coins += coinReward;
     user.answeredQuestions += answeredQuestions;
     user.correctAnswers += correctAnswers;
 
-    // Determine level progression
     let currentLevel = 'noob';
     let nextLevelExp = levels['amateur'];
 
@@ -249,11 +169,12 @@ router.post('/reward', authenticateUser, async (req, res) => {
   }
 });
 
+// Mail transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Use your email provider's service
+  service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.APP_PASS,   // App-specific password
+    user: process.env.EMAIL_USER,
+    pass: process.env.APP_PASS,
   },
 });
 
@@ -261,7 +182,6 @@ const transporter = nodemailer.createTransport({
 router.post('/deck', authenticateUser, async (req, res) => {
   try {
     const { vaccines, viruses } = req.body.deck;
-    // Validate the deck structure
     if (!Array.isArray(vaccines) || !Array.isArray(viruses)) {
       return res.status(400).json({ error: 'Invalid deck format' });
     }
@@ -269,7 +189,6 @@ router.post('/deck', authenticateUser, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Update the deck field
     user.deck = { vaccines, viruses };
     await user.save();
 
@@ -283,13 +202,11 @@ router.post('/deck', authenticateUser, async (req, res) => {
 // Route to retrieve the user's deck
 router.get('/deck', authenticateUser, async (req, res) => {
   try {
-    // Find the user and select only the deck field.
     const user = await User.findById(req.userId).select('deck');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    // Return the deck information
+
     res.json({ deck: user.deck });
   } catch (error) {
     console.error('Error retrieving deck:', error);
@@ -300,7 +217,6 @@ router.get('/deck', authenticateUser, async (req, res) => {
 // Invite route
 router.post('/invite', authenticateUser, async (req, res) => {
   const { email } = req.body;
-
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
   }
@@ -309,7 +225,6 @@ router.post('/invite', authenticateUser, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Log email details
     console.log('Sending email to:', email);
     console.log('Invited by user:', user.username);
 
@@ -320,18 +235,12 @@ router.post('/invite', authenticateUser, async (req, res) => {
       text: `Hello!\n\n${user.username} has invited you to join the Vaccine Awareness Platform!\n\nClick the link below to sign up and start your journey:\n\n${process.env.CLIENT_URL}/signup\n\nBest regards,\nThe Vaccine Awareness Team`,
     };
 
-    console.log('Email options:', mailOptions);
-
-    // Send email
     await transporter.sendMail(mailOptions);
-
-    // Log email success
     console.log('Invitation email sent successfully');
 
-    // Update inviter's task progress
-    user.taskProgress.friendsInvited = (user.taskProgress.friendsInvited || 0) + 1;
-    await user.save();
+    // Removed: user.taskProgress.friendsInvited
 
+    await user.save();
     res.status(200).json({ message: 'Invitation sent successfully!' });
   } catch (error) {
     console.error('Error sending invitation:', error);
@@ -339,12 +248,13 @@ router.post('/invite', authenticateUser, async (req, res) => {
   }
 });
 
+// Leaderboard
 router.get('/leaderboard', authenticateUser, async (req, res) => {
   try {
     const leaderboard = await User.find({})
-      .select('username exp currentLevel') // Include relevant fields
-      .sort({ exp: -1 }) // Sort by `exp` in descending order
-      .limit(10); // Optionally limit to top 10 users
+      .select('username exp currentLevel')
+      .sort({ exp: -1 })
+      .limit(10);
 
     res.json(leaderboard);
   } catch (error) {
@@ -353,5 +263,286 @@ router.get('/leaderboard', authenticateUser, async (req, res) => {
   }
 });
 
-  
+// Free chest
+router.get('/open-free-chest', authenticateUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const now = Date.now();
+    const FIVE_MINUTES = 5 * 60 * 1000;
+
+    if (user.lastFreeChestTime) {
+      const elapsed = now - user.lastFreeChestTime.getTime();
+      if (elapsed < FIVE_MINUTES) {
+        return res.status(400).json({
+          error: 'You must wait 5 minutes before opening another free chest.',
+        });
+      }
+    }
+
+    const drawnCard = pickCard(cardsData);
+
+    const existingCard = user.cards.find((c) => c.id === drawnCard.id);
+    if (existingCard) {
+      existingCard.quantity += 1;
+    } else {
+      user.cards.push({ id: drawnCard.id, quantity: 1 });
+    }
+
+    user.lastFreeChestTime = new Date();
+    await user.save();
+
+    return res.json({
+      message: 'Free chest opened!',
+      card: drawnCard,
+    });
+  } catch (error) {
+    console.error('Error opening free chest:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Premium chest
+router.post('/buy-premium-chest', authenticateUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const chestCost = 50;
+    if (user.coins < chestCost) {
+      return res.status(400).json({ error: 'Not enough coins to buy a premium chest.' });
+    }
+
+    user.coins -= chestCost;
+
+    const drawnCard = pickCard(cardsData);
+
+    const existingCard = user.cards.find((c) => c.id === drawnCard.id);
+    if (existingCard) {
+      existingCard.quantity += 1;
+    } else {
+      user.cards.push({ id: drawnCard.id, quantity: 1 });
+    }
+
+    await user.save();
+
+    return res.json({
+      message: 'Premium chest opened!',
+      card: drawnCard,
+      coinsRemaining: user.coins,
+    });
+  } catch (error) {
+    console.error('Error buying premium chest:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// routes/player.js (or shop.js)
+router.post('/sell-card', authenticateUser, async (req, res) => {
+  try {
+    const { cardId } = req.body;
+
+    if (!cardId) {
+      return res.status(400).json({ error: 'cardId is required' });
+    }
+
+    // 1) Find the user
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // 2) Find the card in user.cards
+    const userCard = user.cards.find((c) => c.id === cardId);
+    if (!userCard) {
+      return res.status(400).json({ error: 'You do not own this card.' });
+    }
+
+    if (userCard.quantity <= 1) {
+      // Means they have 1 or 0 copies => can’t sell
+      return res.status(400).json({ error: 'You can only sell duplicates (quantity > 1)' });
+    }
+
+    // 3) Determine the card’s rarity to compute reward
+    // Suppose you store `rarity` in cardsData or have a separate mapping
+    const defaultCard = cardsData.find((dc) => dc.id === cardId);
+    if (!defaultCard) {
+      return res.status(400).json({ error: 'Card definition not found.' });
+    }
+
+    // define a reward map based on rarity (or use defaultCard.rarity)
+    // Example:
+    const rarityToCoin = {
+      common: 1,
+      rare: 3,
+      epic: 5,
+      legendary: 10,
+      // etc...
+    };
+
+    const cardRarity = defaultCard.rarity || 'common'; // fallback if not found
+    const sellReward = rarityToCoin[cardRarity] || 1;
+
+    // 4) Reduce quantity by 1
+    userCard.quantity -= 1;
+
+    // 5) Add coins to user
+    user.coins += sellReward;
+
+    await user.save();
+
+    return res.json({
+      message: `Sold one duplicate of card #${cardId} for ${sellReward} coin(s).`,
+      coins: user.coins,
+      updatedQuantity: userCard.quantity,
+    });
+  } catch (error) {
+    console.error('Error selling card:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// 1) GET /active => list all open trades
+router.get('/active', authenticateUser, async (req, res) => {
+  try {
+    const trades = await Trade.find({ status: 'open' })
+      .sort({ createdAt: -1 }); // optional: newest first
+    res.json({ trades });
+  } catch (error) {
+    console.error('Error fetching active trades:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 2) POST /create => create new trade listing
+router.post('/create', authenticateUser, async (req, res) => {
+  try {
+    const { cardId, quantity, requiredValue } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Check user has enough duplicates to trade
+    const userCard = user.cards.find((c) => c.id === cardId);
+    if (!userCard || userCard.quantity < quantity + 1) {
+      // If you want them to keep at least 1 copy, 
+      // ensure userCard.quantity >= quantity + 1
+      return res
+        .status(400)
+        .json({ error: 'Not enough duplicates to trade or cannot keep at least 1 copy.' });
+    }
+
+    // "Lock" those duplicates in the trade listing by removing from user inventory
+    userCard.quantity -= quantity;
+    await user.save();
+
+    // Create a new trade doc
+    const newTrade = await Trade.create({
+      ownerId: user._id,
+      offer: [{ cardId, quantity }],
+      requiredValue,
+      status: 'open',
+    });
+
+    return res.json({ message: 'Trade created', trade: newTrade });
+  } catch (err) {
+    console.error('Error creating trade:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /accept => accept trade
+router.post('/accept', authenticateUser, async (req, res) => {
+  try {
+    const { tradeId, offeredCards } = req.body; 
+    // offeredCards should be an array like: [ { cardId, quantity }, ... ]
+
+    const trade = await Trade.findById(tradeId);
+    if (!trade) {
+      return res.status(404).json({ error: 'Trade not found' });
+    }
+    if (trade.status !== 'open') {
+      return res.status(400).json({ error: 'Trade is not open' });
+    }
+
+    // The user trying to accept is "user2"
+    const user2 = await User.findById(req.userId);
+    if (!user2) return res.status(404).json({ error: 'User not found' });
+
+    // 1) Check user2 has these offeredCards in the correct quantities
+    for (let oc of offeredCards) {
+      const user2Card = user2.cards.find((c) => c.id === oc.cardId);
+      if (!user2Card || user2Card.quantity < oc.quantity) {
+        return res.status(400).json({
+          error: `You do not have enough copies of card ID ${oc.cardId} to fulfill this trade.`,
+        });
+      }
+    }
+
+    // 2) Sum up the rarity points of the offeredCards
+    let offeredValue = 0;
+    for (let oc of offeredCards) {
+      // find the card in cardsData
+      const cardDef = cardsData.find((cd) => cd.id === oc.cardId);
+      if (!cardDef) {
+        return res.status(400).json({ error: `Card definition not found for ID ${oc.cardId}` });
+      }
+      // fallback to 'common' if no rarity
+      const cardRarity = cardDef.rarity || 'common';
+      const points = rarityToPoints[cardRarity] || 1;
+      offeredValue += points * oc.quantity;
+    }
+
+    // 3) Compare to trade.requiredValue
+    if (offeredValue < trade.requiredValue) {
+      return res.status(400).json({
+        error: `Not enough total value. Required = ${trade.requiredValue}, you offered = ${offeredValue}`,
+      });
+    }
+
+    // 4) If valid, do the trade
+    const owner = await User.findById(trade.ownerId);
+    if (!owner) return res.status(404).json({ error: 'Trade owner not found' });
+
+    // (a) user2 gets the trade’s offered card(s)
+    trade.offer.forEach((offeredItem) => {
+      const user2Card = user2.cards.find((c) => c.id === offeredItem.cardId);
+      if (user2Card) {
+        user2Card.quantity += offeredItem.quantity;
+      } else {
+        user2.cards.push({ id: offeredItem.cardId, quantity: offeredItem.quantity });
+      }
+    });
+
+    // (b) owner gets user2’s offeredCards
+    offeredCards.forEach((oc) => {
+      const ownerCard = owner.cards.find((c) => c.id === oc.cardId);
+      if (ownerCard) {
+        ownerCard.quantity += oc.quantity;
+      } else {
+        owner.cards.push({ id: oc.cardId, quantity: oc.quantity });
+      }
+    });
+
+    // (c) decrement user2’s inventory for the offeredCards
+    offeredCards.forEach((oc) => {
+      const user2Card = user2.cards.find((c) => c.id === oc.cardId);
+      user2Card.quantity -= oc.quantity;
+      // if (user2Card.quantity <= 0) remove it or keep it at 0 if that's your preference
+    });
+
+    // Mark trade as completed
+    trade.status = 'completed';
+
+    // Save everything
+    await owner.save();
+    await user2.save();
+    await trade.save();
+
+    return res.json({ message: 'Trade completed successfully!' });
+  } catch (error) {
+    console.error('Error accepting trade:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

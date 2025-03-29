@@ -6,7 +6,7 @@ const cardSchema = new mongoose.Schema({
   id: { type: Number, required: true },
   price: { type: Number },
   task: { type: String },
-  isUnlocked: { type: Boolean, default: false },
+  quantity: { type: Number, default: 0 },
 });
 
 const UserSchema = new mongoose.Schema({
@@ -20,7 +20,6 @@ const UserSchema = new mongoose.Schema({
   birthplace: { type: String, required: false },
   scholarity: { type: String, required: false },
   avatar: { type: String, required: false },
-  accessories: { type: [String], default: [] }, // Array for multiple accessories
   coins: { type: Number, default: 0 }, // Use Number for numeric values
   exp: { type: Number, default: 0 },
   currentLevel: { type: String, default: 'noob' }, // Default level
@@ -33,15 +32,9 @@ const UserSchema = new mongoose.Schema({
   },
   resetToken: String,
   resetTokenExpiration: Date,
-  // New task progress tracking fields
-  taskProgress: {
-    profileCompleted: { type: Boolean, default: false }, // For "Complete profile" task
-    gamesPlayed: { type: Number, default: 0 }, // For "Play 5 games" task
-    gamesWon: { type: Number, default: 0 }, // For "Win 3 games" task
-    friendsInvited: { type: Number, default: 0 }, // For "Invite a friend" task
-  },
   answeredQuestions: { type: Number, default: 0 }, // Tracks total answered questions
   correctAnswers: { type: Number, default: 0 }, // Tracks total correct answers
+  lastFreeChestTime: { type: Date, default: null },
 });
 
 // Hash password before saving
