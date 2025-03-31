@@ -10,7 +10,7 @@ const VerifyEmail = () => {
     const verifyEmail = async () => {
       try {
         // Call the API to verify the email
-        const response = await axios.get(`http://localhost:5000/api/auth/verify-email/${token}`);
+        const response = await axios.get(`/api/auth/verify-email/${token}`);
         console.log('Verification response:', response.data);
 
         alert('Email verified successfully!');
