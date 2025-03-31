@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './dinamicQuiz.css';
+import { IoMdExit } from "react-icons/io";
 
 const Quiz = () => {
   const [questions, setQuestions] = useState([]);
@@ -73,26 +73,47 @@ const Quiz = () => {
     }
   };
 
-  if (loading) return <div>Loading questions...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-2xl text-white">
+        Loading questions...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-2xl text-red-500">
+        {error}
+      </div>
+    );
 
   return (
-    <div className="relative">
-      {/* End Quiz Button outside quiz-container */}
-      <button 
-        className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-all"
-        onClick={endQuiz}
-      >
-        End Quiz
-      </button>
-      <div className="quiz-container">
+    <div className="relative min-h-screen bg-[#0B0C10] text-gray-200 p-4">
+      {/* Background Image Overlay */}
+      <div className="absolute inset-0 bg-[url('/BG/bg1.jpg')] bg-cover bg-center bg-no-repeat opacity-100"></div>
+
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-3xl mx-auto  p-8 rounded-lg">
+        {/* End Quiz Button */}
+        <button 
+          className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-all"
+          onClick={endQuiz}
+        >
+          <IoMdExit className='sm:text-2xl lg:text-3xl'/>
+        </button>
+        
         {!quizCompleted ? (
           questions.length > 0 && currentQuestion < questions.length ? (
             <div>
-              <h3>{questions[currentQuestion].question}</h3>
-              <div className="quiz-responses">
+              <h3 className="text-2xl font-bold text-[#66FCF1] mb-4">
+                {questions[currentQuestion].question}
+              </h3>
+              <div className="grid grid-cols-1 gap-3">
                 {questions[currentQuestion].options.map((option, index) => (
-                  <button key={index} onClick={() => handleAnswer(option)}>
+                  <button 
+                    key={index} 
+                    onClick={() => handleAnswer(option)}
+                    className="px-4 py-2 bg-[#45A29E] text-white rounded hover:bg-[#66FCF1] transition-colors"
+                  >
                     {option}
                   </button>
                 ))}
@@ -100,16 +121,21 @@ const Quiz = () => {
             </div>
           ) : null
         ) : (
-          <div className="quiz-over">
-            <h2>Quiz Over! Your score is {score}/{currentQuestion}.</h2>
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold text-[#66FCF1]">
+              Quiz Over! Your score is {score}/{answeredQuestions}.
+            </h2>
             {rewards && (
-              <div className="reward-container">
-                <h3>Rewards Earned:</h3>
-                <p>Coins Earned: {earnedCoins}</p>
-                <p>EXP Earned: {earnedExp}</p>
+              <div className="p-4 bg-gray-800 bg-opacity-80 rounded shadow">
+                <h3 className="text-xl font-bold text-[#66FCF1] mb-2">Rewards Earned:</h3>
+                <p className="text-lg">Coins Earned: {earnedCoins}</p>
+                <p className="text-lg">EXP Earned: {earnedExp}</p>
               </div>
             )}
-            <button className="home-button" onClick={() => window.location.href = '/home'}>
+            <button 
+              className="mt-4 px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all"
+              onClick={() => window.location.href = '/home'}
+            >
               Return to Home
             </button>
           </div>

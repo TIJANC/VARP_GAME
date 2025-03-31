@@ -23,8 +23,8 @@ const ActionNavbar = () => {
 
   // Variants for the dropdown container.
   const dropdownVariants = {
-    hidden: { opacity: 0, scale: 0.8, y: -10 },
-    visible: { opacity: 1, scale: 1, y: 0 },
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
   };
 
   // Variants for each menu item.
@@ -37,12 +37,14 @@ const ActionNavbar = () => {
     <div className="fixed top-4 right-4 z-50">
       {/* Toggle Button */}
       <motion.button
-        className="p-2 text-3xl bg-white shadow rounded-full focus:outline-none"
+        className="p-2 text-3xl bg-[#0B0C10] bg-opacity-90 shadow rounded-full focus:outline-none text-[#66FCF1]"
         onClick={() => setIsOpen(!isOpen)}
         title={isOpen ? "Close Navigation" : "Open Navigation"}
         animate={isOpen ? "open" : "closed"}
         variants={toggleVariants}
         transition={{ duration: 0.3 }}
+        originX={0.5}
+        originY={0.5}
       >
         {isOpen ? (
           <i className="la la-times" aria-hidden="true"></i>
@@ -55,7 +57,7 @@ const ActionNavbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="mt-2 bg-white rounded shadow p-2 flex flex-col space-y-2"
+            className="mt-2 bg-[#0B0C10] bg-opacity-90 rounded shadow p-2 flex flex-col space-y-2 border border-[#66FCF1]"
             initial="hidden"
             animate="visible"
             exit="hidden"
@@ -70,9 +72,9 @@ const ActionNavbar = () => {
                   setIsOpen(false);
                 }}
                 title={label}
-                className="flex items-center space-x-2 text-2xl focus:outline-none"
+                className="flex items-center space-x-2 text-2xl focus:outline-none text-[#66FCF1]"
                 variants={itemVariants}
-                whileHover={{ scale: 1.05, color: "#3b82f6" }}
+                whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
                 <i className={`la ${iconClass}`} aria-hidden="true"></i>

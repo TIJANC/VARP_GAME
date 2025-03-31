@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 
 const Login = () => {
@@ -25,38 +26,61 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#C5C6C7] flex flex-col items-center p-6">
-      <header className="w-full flex justify-between items-center py-4 px-6">
-        <h1 className="text-4xl font-bold text-[#66FCF1]">VARP</h1>
-        <div className="flex space-x-4">
-          <Link to="/signup">
-            <button className="border-2 border-[#45A29E] text-[#45A29E] px-6 py-2 rounded-lg shadow-md hover:bg-[#66FCF1] hover:text-white transition">Sign Up</button>
-          </Link>
-        </div>
-      </header>
+    <div className="relative min-h-screen flex flex-col items-center p-6">
+      {/* Background overlay */}
+      <div className="absolute inset-0 bg-[url('/BG/bg3.jpg')] bg-cover bg-center bg-no-repeat opacity-50"></div>
+      <div className="absolute inset-0 bg-[#0B0C10] opacity-80"></div>
 
-      <div className="max-w-md w-full bg-[#1F2833] p-8 rounded-lg shadow-lg mt-12">
-        <h2 className="text-3xl font-bold text-[#66FCF1] text-center mb-6">Login</h2>
-        <form onSubmit={handleLogin} className="flex flex-col space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="p-3 rounded bg-[#0B0C10] text-white border border-[#45A29E] focus:outline-none focus:ring-2 focus:ring-[#66FCF1]"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="p-3 rounded bg-[#0B0C10] text-white border border-[#45A29E] focus:outline-none focus:ring-2 focus:ring-[#66FCF1]"
-          />
-          <button type="submit" className="bg-[#45A29E] text-white px-6 py-3 rounded-lg shadow-md hover:bg-[#66FCF1] transition">Login</button>
-        </form>
-        <div className="mt-4 text-center">
-          <Link to="/forgot-password" className="text-[#66FCF1] underline">Forgot Password?</Link>
-        </div>
+      {/* Main content */}
+      <div className="relative z-10 w-full">
+        {/* Header */}
+        <header className="w-full flex justify-between items-center py-4 px-6">
+          <h1 className="text-4xl font-bold text-[#66FCF1]">Vaccine Quest</h1>
+          <div className="flex space-x-4">
+            <Link to="/signup">
+              <button className="border-2 border-[#45A29E] text-[#45A29E] px-6 py-2 rounded-lg shadow-md hover:bg-[#66FCF1] hover:text-white transition">
+                Sign Up
+              </button>
+            </Link>
+          </div>
+        </header>
+
+        {/* Login Form Container */}
+        <motion.div 
+          className="max-w-md w-full bg-gradient-to-br from-[#0A1F3B] to-[#152C4F] p-8 rounded-lg shadow-lg mt-12 mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-3xl font-bold text-center text-[#66FCF1] mb-6">Login</h2>
+          <form onSubmit={handleLogin} className="flex flex-col space-y-4">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="p-3 rounded bg-[#0B0C10] text-white border border-[#45A29E] focus:outline-none focus:ring-2 focus:ring-[#66FCF1]"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 rounded bg-[#0B0C10] text-white border border-[#45A29E] focus:outline-none focus:ring-2 focus:ring-[#66FCF1]"
+            />
+            <button 
+              type="submit" 
+              className="bg-[#45A29E] text-white px-6 py-3 rounded-lg shadow-md hover:bg-[#66FCF1] transition"
+            >
+              Login
+            </button>
+          </form>
+          <div className="mt-4 text-center">
+            <Link to="/forgot-password" className="text-[#66FCF1] underline">
+              Forgot Password?
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

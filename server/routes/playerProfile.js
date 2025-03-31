@@ -275,8 +275,10 @@ router.get('/open-free-chest', authenticateUser, async (req, res) => {
     if (user.lastFreeChestTime) {
       const elapsed = now - user.lastFreeChestTime.getTime();
       if (elapsed < FIVE_MINUTES) {
+        const remainingTime = Math.ceil((FIVE_MINUTES - elapsed) / 1000); // in seconds
         return res.status(400).json({
           error: 'You must wait 5 minutes before opening another free chest.',
+          remainingTime,
         });
       }
     }
@@ -338,57 +340,67 @@ router.post('/buy-premium-chest', authenticateUser, async (req, res) => {
   }
 });
 
-// routes/player.js (or shop.js)
 router.post('/sell-card', authenticateUser, async (req, res) => {
   try {
+    console.log('Sell-card request received:', req.body);
     const { cardId } = req.body;
 
     if (!cardId) {
+      console.log('cardId is missing in request body');
       return res.status(400).json({ error: 'cardId is required' });
     }
 
-    // 1) Find the user
+    // 1) Find the user.
     const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      console.log(`User with ID ${req.userId} not found.`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log('User found:', user._id);
 
-    // 2) Find the card in user.cards
+    // 2) Find the card in user.cards.
     const userCard = user.cards.find((c) => c.id === cardId);
     if (!userCard) {
+      console.log(`User does not own card #${cardId}.`);
       return res.status(400).json({ error: 'You do not own this card.' });
     }
-
     if (userCard.quantity <= 1) {
-      // Means they have 1 or 0 copies => can’t sell
+      console.log(`Not enough duplicates to sell card #${cardId}. Quantity: ${userCard.quantity}`);
       return res.status(400).json({ error: 'You can only sell duplicates (quantity > 1)' });
     }
+    console.log(`User card before selling: ${JSON.stringify(userCard)}`);
 
-    // 3) Determine the card’s rarity to compute reward
-    // Suppose you store `rarity` in cardsData or have a separate mapping
+    // 3) Determine the card’s rarity.
     const defaultCard = cardsData.find((dc) => dc.id === cardId);
     if (!defaultCard) {
+      console.log(`Card definition not found for card #${cardId}`);
       return res.status(400).json({ error: 'Card definition not found.' });
     }
+    console.log('Default card found:', defaultCard);
 
-    // define a reward map based on rarity (or use defaultCard.rarity)
-    // Example:
+    // Define a reward map based on rarity.
     const rarityToCoin = {
       common: 1,
       rare: 3,
       epic: 5,
       legendary: 10,
-      // etc...
     };
 
-    const cardRarity = defaultCard.rarity || 'common'; // fallback if not found
+    // Normalize the rarity string.
+    const cardRarity = defaultCard.rarity ? defaultCard.rarity.toLowerCase() : 'common';
     const sellReward = rarityToCoin[cardRarity] || 1;
+    console.log(`Card rarity: ${cardRarity}, Reward: ${sellReward}`);
 
-    // 4) Reduce quantity by 1
+    // 4) Reduce quantity by 1.
     userCard.quantity -= 1;
+    console.log(`New card quantity: ${userCard.quantity}`);
 
-    // 5) Add coins to user
+    // 5) Add coins to the user.
     user.coins += sellReward;
+    console.log(`User coins after selling: ${user.coins}`);
 
     await user.save();
+    console.log('User data saved successfully.');
 
     return res.json({
       message: `Sold one duplicate of card #${cardId} for ${sellReward} coin(s).`,
@@ -400,7 +412,6 @@ router.post('/sell-card', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 // 1) GET /active => list all open trades
 router.get('/active', authenticateUser, async (req, res) => {

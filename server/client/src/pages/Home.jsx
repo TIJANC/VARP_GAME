@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ActionNavbar from '../components/ActionNavbar';
+import { FaMedal, FaCoins } from 'react-icons/fa';
+import { GiUpgrade } from "react-icons/gi";
+import ChestOpeningAnimation from './ChestAnimation';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -13,16 +16,19 @@ const Home = () => {
     currentLevel: 'noob',
     nextLevelExp: 100,
   });
-
   const [userInfo, setUserInfo] = useState({});
   const [leaderboard, setLeaderboard] = useState([]);
   const [error, setError] = useState(null);
 
-  // New states for chest messages and drawn card
+  // States for chest messages and drawn card.
   const [chestMessage, setChestMessage] = useState('');
   const [drawnCard, setDrawnCard] = useState(null);
 
-  // Mapping from level name to image number.
+  // State for free chest timer (in seconds)
+  const [freeChestTimer, setFreeChestTimer] = useState(0);
+  // New state to control the chest animation.
+  const [showChestAnimation, setShowChestAnimation] = useState(false);
+
   const levelMap = {
     noob: 1,
     amateur: 2,
@@ -31,13 +37,29 @@ const Home = () => {
     master: 5,
   };
 
-  // Determine the character image based on user's avatar + level
+  // Determine the character image.
   const getCharacterImage = () => {
     if (!userInfo.avatar || !userData.currentLevel) {
       return '/Images/default-avatar.png';
     }
     const levelNumber = levelMap[userData.currentLevel] || 1;
     return `/Characters/${userInfo.avatar}${levelNumber}.png`;
+  };
+
+  // Timer effect to count down every second.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFreeChestTimer(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Helper to format time as HH:MM:SS.
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   useEffect(() => {
@@ -47,7 +69,6 @@ const Home = () => {
       return;
     }
 
-    // Fetch user info (username, avatar, etc.)
     const fetchUserInfo = async () => {
       try {
         const response = await axios.get('/api/player/profile', {
@@ -60,7 +81,6 @@ const Home = () => {
       }
     };
 
-    // Fetch user stats (coins, exp, etc.)
     const fetchUserData = async () => {
       try {
         const response = await axios.get('/api/player/profile', {
@@ -72,6 +92,16 @@ const Home = () => {
           currentLevel: response.data.currentLevel || 'noob',
           nextLevelExp: response.data.nextLevelExp || 100,
         });
+
+        if (response.data.lastFreeChestTime) {
+          const lastTime = new Date(response.data.lastFreeChestTime);
+          const elapsed = Date.now() - lastTime.getTime();
+          const FIVE_MINUTES = 5 * 60; // in seconds.
+          const remaining = Math.max(FIVE_MINUTES - Math.floor(elapsed / 1000), 0);
+          setFreeChestTimer(remaining);
+        } else {
+          setFreeChestTimer(0);
+        }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           navigate('/login');
@@ -81,7 +111,6 @@ const Home = () => {
       }
     };
 
-    // Fetch leaderboard
     const fetchLeaderboard = async () => {
       try {
         const response = await axios.get('/api/player/leaderboard', {
@@ -98,11 +127,15 @@ const Home = () => {
     fetchLeaderboard();
   }, [navigate]);
 
-  // ---- NEW: Handler to open a free chest ----
+  // Handler to open a free chest.
   const openFreeChest = async () => {
-    setChestMessage('');
-    setDrawnCard(null);
+    if (freeChestTimer > 0) return; // Prevent if timer hasn't reached zero.
+    // Instead of calling API immediately, we trigger the chest animation.
+    setShowChestAnimation(false);
+  };
 
+  // Callback triggered when chest animation completes.
+  const handleChestAnimationComplete = async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get('/api/player/open-free-chest', {
@@ -110,11 +143,8 @@ const Home = () => {
       });
       setChestMessage(res.data.message);
       setDrawnCard(res.data.card);
-
-      // Optionally update user's coins if your free chest also gives coins
-      // or if the user gets updated in any other way
-      // e.g., fetchUserData() again or setUserData with the new data
-
+      // Reset the timer after a successful open to 5 minutes.
+      setFreeChestTimer(300);
     } catch (err) {
       console.error(err);
       if (err.response?.data?.error) {
@@ -123,26 +153,25 @@ const Home = () => {
         setChestMessage('An error occurred opening the free chest.');
       }
     }
+    setShowChestAnimation(false);
   };
 
-  // ---- NEW: Handler to buy a premium chest ----
+  // Handler to buy a premium chest remains unchanged.
   const buyPremiumChest = async () => {
     setChestMessage('');
     setDrawnCard(null);
-
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('/api/player/buy-premium-chest', {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.post(
+        '/api/player/buy-premium-chest',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setChestMessage(res.data.message);
       setDrawnCard(res.data.card);
-
-      // Update user's coins
       if (res.data.coinsRemaining !== undefined) {
         setUserData((prev) => ({ ...prev, coins: res.data.coinsRemaining }));
       }
-
     } catch (err) {
       console.error(err);
       if (err.response?.data?.error) {
@@ -154,97 +183,130 @@ const Home = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 p-4 overflow-y-auto">
-      <div className="max-w-7xl mx-auto bg-white shadow-md p-8">
-        <img
-          src={getCharacterImage()}
-          alt="User Avatar"
-          className="w-40 h-40 object-cover mx-auto"
-        />
-        <strong className="block text-xl mt-4">
-          {userInfo.username || 'Not provided'}
-        </strong>
+    <div className="relative w-full min-h-screen p-4 overflow-y-auto bg-[#0B0C10]">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-[url('/BG/bg4.jpg')] bg-cover bg-center bg-no-repeat opacity-50"></div>
+      <div className="absolute inset-0 bg-[#0B0C10] opacity-80"></div>
+
+      {/* Main Content */}
+      <div className="relative z-10 max-w-7xl mx-auto bg-transparent shadow-md p-8 rounded-lg">
+        {/* Top section with Horizontal Stats, Character Image and Username */}
+        <div className="flex flex-col items-center">
+          <div className="flex justify-around w-full mt-6">
+            <div className="flex flex-col items-center">
+              <GiUpgrade className="text-3xl text-[#66FCF1]" />
+              <span className="text-lg text-gray-300">Level: {userData.currentLevel}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-lg text-gray-300">
+                EXP: {userData.exp}/{userData.nextLevelExp}
+              </span>
+              <div className="w-32 bg-gray-800 rounded h-2 mt-1">
+                <div
+                  className="bg-[#66FCF1] h-2 rounded"
+                  style={{
+                    width: `${(userData.exp / userData.nextLevelExp) * 100}%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <FaCoins className="text-3xl" style={{ color: '#FFD700' }} />
+              <span className="text-lg text-gray-300">{userData.coins} Coins</span>
+            </div>
+          </div>
+          <img
+            src={getCharacterImage()}
+            alt="User Avatar"
+            className="w-40 h-40 object-cover mx-auto mt-6"
+          />
+          <strong className="block text-2xl mt-4 text-[#66FCF1]">
+            {userInfo.username || 'Not provided'}
+          </strong>
+        </div>
 
         {error ? (
-          <div className="text-red-500 mt-2">{error}</div>
+          <div className="text-red-500 mt-2 text-center">{error}</div>
         ) : (
           <>
-            <div className="text-center mt-4">
-              <h3 className="text-2xl font-semibold">
-                Current Level: {userData.currentLevel}
-              </h3>
-              <p className="mt-2">
-                EXP: {userData.exp}/{userData.nextLevelExp} (Next Level)
-              </p>
-            </div>
-
-            <div className="w-full bg-gray-200 rounded h-4 my-4">
-              <div
-                className="bg-blue-500 h-4 rounded"
-                style={{ width: `${(userData.exp / userData.nextLevelExp) * 100}%` }}
-              ></div>
-            </div>
-
-            <div className="text-center text-lg">
-              <span>Coins: {userData.coins}</span>
-            </div>
-
-            {/* Button to go to dynamic quiz */}
             <div className="flex justify-center my-6">
               <button
-                className="px-6 py-3 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
+                className="px-6 py-3 bg-[#45A29E] text-white font-bold rounded hover:bg-[#66FCF1] transition"
                 onClick={() => navigate('/games/dinamic-quiz')}
               >
                 Play Quiz
               </button>
             </div>
 
-            {/* NEW: Free chest + Premium chest buttons */}
+            {/* Chest Images for Free & Premium Chests */}
             <div className="flex justify-center my-6">
-              <button
-                onClick={openFreeChest}
-                className="mr-4 px-6 py-3 bg-green-500 text-white font-bold rounded hover:bg-green-600"
-              >
-                Open Free Chest
-              </button>
-              <button
-                onClick={buyPremiumChest}
-                className="px-6 py-3 bg-yellow-500 text-white font-bold rounded hover:bg-yellow-600"
-              >
-                Buy Premium Chest (50 coins)
-              </button>
+              <div className="mx-4 text-center">
+                {/* Render ChestOpeningAnimation when ready */}
+                {freeChestTimer === 0 ? (
+                  showChestAnimation ? (
+                    <ChestOpeningAnimation
+                      closedChest="/Images/chest_simple.png"
+                      openChest="/Images/chest_simple_open.png"
+                      onOpenComplete={handleChestAnimationComplete}
+                    />
+                  ) : (
+                    <img
+                      src="/Images/chest_simple.png"
+                      alt="Free Chest"
+                      className="w-32 h-32 object-contain cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => setShowChestAnimation(true)}
+                    />
+                  )
+                ) : (
+                  <span className="block mt-2 text-gray-300">
+                    Available in: {formatTime(freeChestTimer)}
+                  </span>
+                )}
+                {freeChestTimer === 0 && !showChestAnimation && (
+                  <span className="block mt-2 text-gray-300">Open Free Chest</span>
+                )}
+              </div>
+              <div className="mx-4 text-center">
+                <img
+                  src="/Images/chest_premium.png"
+                  alt="Premium Chest"
+                  className="cursor-pointer w-32 h-32 object-contain hover:scale-105 transition-transform"
+                  onClick={buyPremiumChest}
+                />
+                <span className="block mt-2 text-gray-300">Premium Chest 50 coins</span>
+              </div>
             </div>
 
-            {/* Show message / card draw results */}
             {chestMessage && (
               <div className="text-center mb-4">
-                <p className="font-semibold">{chestMessage}</p>
+                <p className="font-semibold text-[#66FCF1]">{chestMessage}</p>
               </div>
             )}
             {drawnCard && (
               <div className="text-center">
-                <p>You received: {drawnCard.name}</p>
-                <p>Rarity: {drawnCard.rarity}</p>
+                <p className="text-gray-300">You received: {drawnCard.name}</p>
+                <p className="text-gray-300">Rarity: {drawnCard.rarity}</p>
                 <img
                   src={drawnCard.image}
                   alt={drawnCard.name}
-                  style={{ height: '100px', margin: '0 auto' }}
+                  className="h-24 mx-auto"
                 />
               </div>
             )}
 
-            {/* Leaderboard Section */}
             <div className="mt-8">
-              <h2 className="text-2xl font-bold text-center">Leaderboard</h2>
+              <h2 className="text-2xl font-bold text-center text-[#66FCF1]">
+                Leaderboard
+              </h2>
               <ul className="max-w-md mx-auto mt-4">
                 {leaderboard.map((user, index) => (
                   <li
                     key={user._id}
-                    className="flex justify-between items-center bg-gray-100 p-2 my-1 rounded"
+                    className="flex justify-between items-center bg-gray-800 p-2 my-1 rounded"
                   >
-                    <span className="font-bold">#{index + 1}</span>
-                    <span>{user.username}</span>
-                    <span>{user.exp} EXP</span>
+                    <span className="font-bold text-[#66FCF1]">#{index + 1}</span>
+                    <span className="text-gray-300">{user.username}</span>
+                    <span className="text-gray-300">{user.exp} EXP</span>
                   </li>
                 ))}
               </ul>

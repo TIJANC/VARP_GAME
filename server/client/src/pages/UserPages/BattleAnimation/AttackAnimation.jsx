@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { GiBrokenShield, GiEdgedShield, GiSkullBolt, GiShamrock } from 'react-icons/gi';
 
 export const AttackAnimation = ({ 
   attacker, 
@@ -17,9 +18,9 @@ export const AttackAnimation = ({
     animate: { opacity: 1, y: 0 },
   };
 
-  // Variants for the attacker card: slide in, then pulse and rotate on impact.
+  // Variants for the attacker card.
   const attackerVariants = {
-    initial: { x: side === 'computer->player' ? -300 : 300, opacity: 0, scale: 0.8 },
+    initial: { x: side === 'computer->player' ? -200 : 200, opacity: 0, scale: 0.8 },
     animate: { 
       x: 0, 
       opacity: 1, 
@@ -28,17 +29,9 @@ export const AttackAnimation = ({
     }
   };
 
-  // Shake variant for when the attack misses.
-  const shakeVariant = {
-    animate: { 
-      x: [0, -10, 10, -10, 10, 0],
-      transition: { duration: 0.8, ease: "easeInOut" },
-    }
-  };
-
-  // Variants for the defender card: slide in and then bounce slightly.
+  // Variants for the defender card.
   const defenderVariants = {
-    initial: { x: side === 'computer->player' ? 300 : -300, opacity: 0, scale: 0.8 },
+    initial: { x: side === 'computer->player' ? 200 : -200, opacity: 0, scale: 0.8 },
     animate: { 
       x: 0, 
       opacity: 1, 
@@ -46,46 +39,41 @@ export const AttackAnimation = ({
     }
   };
 
-  // Variant for the roll display with a pulse effect.
+  // Variant for the roll display.
   const rollVariants = {
-    initial: { opacity: 0, scale: 0.8 },
-    animate: { 
-      opacity: 1, 
-      scale: [1, 1.2, 1],
-    }
-  };
-
-  // Variant for a flash effect for MISS.
-  const flashVariants = {
     initial: { opacity: 0 },
-    animate: { opacity: [0.8, 0], scale: [1, 2] },
+    animate: { opacity: 1 },
   };
 
-  // Variant for a slice (slash) effect for HIT.
-  const sliceVariant2 = {
-    initial: { opacity: 0, scaleX: 0, rotate: side === 'computer->player' ? -45 : 45 },
-    animate: { opacity: 1, scaleX: 1 },
-    exit: { opacity: 0, scaleX: 0 },
+  // Icon fade variant.
+  const outcomeIconVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
   };
 
-    // Outcome text variant for HIT.
-  const outcomeTextHitVariants = {
-    initial: { opacity: 0, y: -20, scale: 0.8 },
-    animate: { opacity: 1, y: 0, scale: [1, 1.3, 1] },
-  };
+  // Normalize outcome for consistent comparison.
+  const normalizedOutcome = outcome.toUpperCase();
 
-  // Outcome text variant for MISS.
-  const outcomeTextMissVariants = {
-    initial: { opacity: 0, y: -20, scale: 0.8 },
-    animate: { opacity: 1, y: 0, scale: [1, 0.8, 1] },
-  };
+  // Determine which icon to display based on scenario.
+  let outcomeIcon;
+  if (isProtected) {
+    // Vaccinated scenario.
+    outcomeIcon = normalizedOutcome === "HIT" 
+      ? <GiBrokenShield className="text-red-600 text-[70px] sm:text-[90px]" /> 
+      : <GiEdgedShield className="text-green-600 text-[70px] sm:text-[120px]" />;
+  } else {
+    // Not vaccinated scenario.
+    outcomeIcon = normalizedOutcome === "HIT" 
+      ? <GiSkullBolt className="text-red-600 text-[70px] sm:text-[90px]" /> 
+      : <GiShamrock className="text-green-600 text-[70px] sm:text-[90px]" />;
+  }
 
   return (
-    <div className="relative w-full h-72 flex flex-col items-center justify-center bg-gray-100">
+    <div className="relative w-full sm:w-1/2 h-72 flex flex-col items-center justify-center bg-[#0B0C10]">
       {/* Round indicator */}
       {round && (
         <motion.div
-          className="absolute top-4 text-3xl font-bold text-blue-500"
+          className="absolute top-4 text-3xl font-bold text-[#66FCF1]"
           variants={roundIndicatorVariants}
           initial="initial"
           animate="animate"
@@ -95,51 +83,32 @@ export const AttackAnimation = ({
         </motion.div>
       )}
 
-      {/* Container for the animated cards */}
+      {/* Animated cards container */}
       <div className="relative w-full h-48 flex items-center justify-center">
         {/* Attacker card */}
-        { outcome === "MISS" ? (
-          <motion.div 
-            variants={shakeVariant}
-            animate="animate"
-          >
-            <motion.img
-              src={attacker.image}
-              alt={attacker.name}
-              className={`w-20 h-20 object-cover rounded absolute ${side === 'computer->player' ? 'left-0' : 'right-0'}`}
-              variants={attackerVariants}
-              initial="initial"
-              animate="animate"
-              transition={{ duration: 1.2 }}
-            />
-          </motion.div>
-        ) : (
-          <motion.img
-            src={attacker.image}
-            alt={attacker.name}
-            className={`w-20 h-20 object-cover rounded absolute ${side === 'computer->player' ? 'left-0' : 'right-0'}`}
-            variants={attackerVariants}
-            initial="initial"
-            animate="animate"
-            transition={{ duration: 1.2 }}
-          />
-        )}
-
+        <motion.img
+          src={attacker.image}
+          alt={attacker.name}
+          className={`w-16 h-18 sm:w-48 sm:h-50 object-cover rounded absolute ${side === 'computer->player' ? 'left-0' : 'right-0'}`}
+          variants={attackerVariants}
+          initial="initial"
+          animate="animate"
+          transition={{ duration: 1.2 }}
+        />
+        
         {isProtected ? (
-          // Always display defender if available.
           <motion.img
             src={defender.image}
             alt={defender.name}
-            className={`w-20 h-20 object-cover rounded absolute ${side === 'computer->player' ? 'right-0' : 'left-0'}`}
+            className={`w-16 h-18 sm:w-48 sm:h-50 object-cover rounded absolute ${side === 'computer->player' ? 'right-0' : 'left-0'}`}
             variants={defenderVariants}
             initial="initial"
             animate="animate"
             transition={{ duration: 1.2, delay: 0.4 }}
           />
         ) : (
-          // If not protected, display the roll value with a pulse animation.
           <motion.div
-            className="absolute"
+            className="absolute text-white text-2xl"
             variants={rollVariants}
             initial="initial"
             animate="animate"
@@ -148,61 +117,23 @@ export const AttackAnimation = ({
             {roll}
           </motion.div>
         )}
-
-        {/* Outcome overlay: flash for MISS, slice for HIT */}
-        { outcome === "MISS" && (
-          <motion.div
-            className={`absolute w-20 h-20 bg-sky-500 rounded ${side === 'computer->player' ? 'right-0' : 'left-0'}`}
-            variants={flashVariants}
-            initial="initial"
-            animate="animate"
-            transition={{ duration: 0.8, delay: 1.0 }}
-          />
-        )}
-        { outcome === "HIT" && (
-<motion.div
-    className="absolute h-2 bg-red-600"
-    variants={sliceVariant2}
-    initial="initial"
-    animate="animate"
-    exit="exit"
-    transition={{ duration: 0.8, delay: 1.0 }}
-    style={{
-      width: '60%',
-      top: '50%',
-      left: side === 'computer->player' ? 'auto' : '20%',
-      right: side === 'computer->player' ? '20%' : 'auto',
-    }}          />
-        )}
       </div>
       
-      {/* Animated outcome text */}
-      { outcome === "HIT" ? (
-        <motion.div
-          className="mt-2 text-4xl font-extrabold text-red-600"
-          variants={outcomeTextHitVariants}
-          initial="initial"
-          animate="animate"
-          transition={{ duration: 0.8, delay: 1.5 }}
-        >
-          HIT!
-        </motion.div>
-      ) : (
-        <motion.div
-          className="mt-2 text-4xl font-extrabold text-green-600"
-          variants={outcomeTextMissVariants}
-          initial="initial"
-          animate="animate"
-          transition={{ duration: 0.8, delay: 1.8 }}
-        >
-          MISS!
-        </motion.div>
-      )}
+      {/* Outcome Icon */}
+      <motion.div
+        className="mt-2"
+        variants={outcomeIconVariants}
+        initial="initial"
+        animate="animate"
+        transition={{ duration: 0.8, delay: 1.5 }}
+      >
+        {outcomeIcon}
+      </motion.div>
 
-      {/* Display additional info */}
+      {/* Additional info */}
       <div className="mt-4 text-center">
-        <p className="text-sm">
-          Threshold: <span className="font-semibold">{threshold}</span>
+        <p className="text-sm text-white">
+          Damage: <span className="font-semibold">{threshold}</span>
         </p>
         <p className="text-sm">
           Protection:{" "}
@@ -214,7 +145,7 @@ export const AttackAnimation = ({
             <span className="font-semibold text-red-600">Not Protected</span>
           )}
         </p>
-        <p className="text-sm">
+        <p className="text-sm text-white">
           Outcome: <span className="font-semibold">{outcome}</span>
         </p>
       </div>

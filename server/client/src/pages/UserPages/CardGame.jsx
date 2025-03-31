@@ -44,10 +44,8 @@ const DeckBuilder = () => {
           const response = await axios.get('/api/player/deck', {
             headers: { Authorization: `Bearer ${token}` },
           });
-          // Ensure deck exists
           const deck = response.data.deck || { vaccines: [], viruses: [] };
           setCurrentDeck(deck);
-          // Map the saved IDs to the actual card objects from unlockedCards.
           const selectedVaccinesCards = deck.vaccines
             .map(id => unlockedCards.find(card => card.id === id))
             .filter(card => card);
@@ -109,7 +107,6 @@ const DeckBuilder = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert(response.data.message);
-      // Update the current deck state after saving.
       setCurrentDeck(deck);
     } catch (error) {
       console.error('Error saving deck:', error);
@@ -128,7 +125,7 @@ const DeckBuilder = () => {
 
   if (loading)
     return (
-      <div className="text-center mt-8 text-xl">
+      <div className="text-center mt-8 text-xl text-white">
         Loading unlocked cards...
       </div>
     );
@@ -138,112 +135,120 @@ const DeckBuilder = () => {
     );
 
   return (
-    <div className="p-8 space-y-8">
-      <h1 className="text-3xl font-bold text-center mb-6">Deck Builder</h1>
+    <div className="relative min-h-screen p-8 bg-[#0B0C10]">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-[url('/BG/bg4.jpg')] bg-cover bg-center bg-no-repeat opacity-50"></div>
+      <div className="absolute inset-0 bg-[#0B0C10] opacity-80"></div>
 
-      {/* Display current deck */}
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Your Current Deck</h2>
-        <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-          <div className="p-4 bg-white shadow rounded">
-            <h3 className="font-semibold">Vaccines</h3>
-            <div className="flex gap-2 flex-wrap justify-center mt-2">
-              {selectedVaccines.length > 0 ? (
-                selectedVaccines.map((card, i) => (
-                  <img
-                    key={i}
-                    src={card.image}
-                    alt={card.name}
-                    className="w-20 h-18 object-cover rounded"
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-gray-500">No vaccine cards selected</p>
-              )}
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto bg-transparent shadow-md p-8 rounded-lg">
+        <h1 className="text-3xl font-bold text-center text-[#66FCF1] mb-6">Deck Builder</h1>
+
+        {/* Display Current Deck */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-2">Your Current Deck</h2>
+          <div className="flex flex-col md:flex-row justify-center items-center gap-8">
+            <div className="p-4 bg-gray-800 bg-opacity-80 rounded shadow">
+              <h3 className="font-semibold text-white">Vaccines</h3>
+              <div className="flex gap-2 flex-wrap justify-center mt-2">
+                {selectedVaccines.length > 0 ? (
+                  selectedVaccines.map((card, i) => (
+                    <img
+                      key={i}
+                      src={card.image}
+                      alt={card.name}
+                      className="w-20 h-18 object-cover rounded"
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No vaccine cards selected</p>
+                )}
+              </div>
+            </div>
+            <div className="p-4 bg-gray-800 bg-opacity-80 rounded shadow">
+              <h3 className="font-semibold text-white">Viruses</h3>
+              <div className="flex gap-2 flex-wrap justify-center mt-2">
+                {selectedViruses.length > 0 ? (
+                  selectedViruses.map((card, i) => (
+                    <img
+                      key={i}
+                      src={card.image}
+                      alt={card.name}
+                      className="w-20 h-18 object-cover rounded"
+                    />
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No virus cards selected</p>
+                )}
+              </div>
             </div>
           </div>
-          <div className="p-4 bg-white shadow rounded">
-            <h3 className="font-semibold">Viruses</h3>
-            <div className="flex gap-2 flex-wrap justify-center mt-2">
-              {selectedViruses.length > 0 ? (
-                selectedViruses.map((card, i) => (
-                  <img
-                    key={i}
-                    src={card.image}
-                    alt={card.name}
-                    className="w-20 h-18 object-cover rounded"
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-gray-500">No virus cards selected</p>
-              )}
-            </div>
-          </div>
+        </section>
+
+        <div className="text-center mt-8 space-x-4">
+          <button
+            onClick={handleSaveDeck}
+            className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          >
+            Save Deck
+          </button>
+          <button
+            onClick={handleBattleNow}
+            className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Battle Now
+          </button>
         </div>
-      </section>
-      <div className="text-center mt-8 space-x-4">
-        <button
-          onClick={handleSaveDeck}
-          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
-        >
-          Save Deck
-        </button>
-        <button
-          onClick={handleBattleNow}
-          className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Battle Now
-        </button>
+
+        {/* Section to modify the deck */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-2">Select up to 5 Vaccine Cards</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {unlockedCards.filter(isVaccine).map(card => (
+              <div
+                key={card.id}
+                className={`p-1 border-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
+                  selectedVaccines.find(c => c.id === card.id)
+                    ? "border-green-500"
+                    : "border-gray-300"
+                }`}
+                onClick={() => toggleSelection(card)}
+              >
+                <img
+                  src={card.image}
+                  alt={card.name}
+                  className="w-20 h-18 mx-auto"
+                />
+                <p className="mt-2 text-sm text-white">{card.name}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-2">Select up to 10 Virus Cards</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {unlockedCards.filter(isVirus).map(card => (
+              <div
+                key={card.id}
+                className={`border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
+                  selectedViruses.find(c => c.id === card.id)
+                    ? "border-green-500"
+                    : "border-gray-300"
+                }`}
+                onClick={() => toggleSelection(card)}
+              >
+                <img
+                  src={card.image}
+                  alt={card.name}
+                  className="w-20 h-18 mx-auto"
+                />
+                <p className="mt-2 text-sm text-white">{card.name}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
-
-      {/* Section to modify the deck */}
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Select up to 5 Vaccine Cards</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {unlockedCards.filter(isVaccine).map(card => (
-            <div
-              key={card.id}
-              className={`border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
-                selectedVaccines.find(c => c.id === card.id)
-                  ? "border-green-500"
-                  : "border-gray-300"
-              }`}
-              onClick={() => toggleSelection(card)}
-            >
-              <img
-                src={card.image}
-                alt={card.name}
-                className="w-24 h-auto mx-auto"
-              />
-              <p className="mt-2 text-sm">{card.name}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Select up to 10 Virus Cards</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {unlockedCards.filter(isVirus).map(card => (
-            <div
-              key={card.id}
-              className={`border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
-                selectedViruses.find(c => c.id === card.id)
-                  ? "border-green-500"
-                  : "border-gray-300"
-              }`}
-              onClick={() => toggleSelection(card)}
-            >
-              <img
-                src={card.image}
-                alt={card.name}
-                className="w-24 h-auto mx-auto"
-              />
-              <p className="mt-2 text-sm">{card.name}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <ActionNavbar />
     </div>
