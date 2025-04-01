@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ActionNavbar from '../../components/ActionNavbar';
 import { cardsData } from '../../assets/cardsData';
 import { OutcomeAnimation } from './BattleAnimation/BattleAnimations';
 import { AttackAnimation } from './BattleAnimation/AttackAnimation';
+import { VscTools } from "react-icons/vsc";
+import { FaUsers } from "react-icons/fa";
 
 const PvEBattle = () => {
+  const navigate = useNavigate();
   const [playerDeck, setPlayerDeck] = useState(null);
   const [attackEvents, setAttackEvents] = useState([]);
   const [battleOutcome, setBattleOutcome] = useState("");
@@ -177,98 +181,123 @@ const PvEBattle = () => {
       <div className="absolute inset-0 opacity-80"></div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto bg-transparent shadow-md p-8 rounded-lg">
+      <div className="relative z-10 max-w-7xl mx-auto bg-transparent shadow-md p-8 rounded-lg justify-items-center">
         <h1 className="text-3xl font-bold text-center mb-6 text-[#66FCF1]">PvE Battle</h1>
         
-{/* Display player's deck in a grid */}
-<div className="text-center mb-4">
-  <p className="text-lg font-semibold text-white">Your Deck:</p>
-  <div className="grid grid-cols-1 gap-4">
-    {/* Vaccines */}
-    <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
-      <h2 className="font-semibold text-white mb-2">Vaccines</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-        {playerDeck.vaccines.map((vaccineId, i) => {
-          const vaccine = cardsData.find(card => card.id === vaccineId && card.type === 'vaccine');
-          return vaccine ? (
-            <div key={i} className="flex flex-col items-center">
-              <img
-                src={vaccine.image}
-                alt={vaccine.name}
-                className="w-20 h-18 object-cover rounded"
-              />
-              <p className="mt-1 text-xs text-white">{vaccine.name}</p>
-            </div>
-          ) : null;
-        })}
-      </div>
-    </div>
-    {/* Viruses */}
-    <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
-      <h2 className="font-semibold text-white mb-2">Viruses</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 justify-self-center gap-3">
-        {playerDeck.viruses.map((virusId, i) => {
-          const virus = cardsData.find(card => card.id === virusId && card.type === 'virus');
-          return virus ? (
-            <div key={i} className="flex flex-col items-center">
-              <img
-                src={virus.image}
-                alt={virus.name}
-                className="w-20 h-18 object-cover rounded"
-              />
-              <p className="mt-1 text-xs text-white">{virus.name}</p>
-            </div>
-          ) : null;
-        })}
-      </div>
-    </div>
-  </div>
-</div>
+        {/* Navigation Buttons */}
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() => navigate('/games/card-game')}
+            className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-all flex items-center gap-2"
+          >
+            Build Deck <VscTools className="text-2xl" />
+          </button>
+          
+          <button
+            onClick={() => navigate('/games/PvP-battle')}
+            className="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-700 transition-all flex items-center gap-2"
+          >
+            PvP Battle <FaUsers className="text-xl" />
+          </button>
+        </div>
 
-{/* Display computer's deck in a grid */}
-<div className="text-center mb-4">
-  <p className="text-lg font-semibold text-white">Computer's Deck:</p>
-  <div className="grid grid-cols-1 gap-4">
-    {/* Vaccines */}
-    <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
-      <h2 className="font-semibold text-white mb-2">Vaccines</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-        {computerDeck.vaccines.map((vaccineId, i) => {
-          const vaccine = cardsData.find(card => card.id === vaccineId && card.type === 'vaccine');
-          return vaccine ? (
-            <div key={i} className="flex flex-col items-center">
-              <img
-                src={vaccine.image}
-                alt={vaccine.name}
-                className="w-20 h-18 object-cover rounded"
-              />
-              <p className="mt-1 text-xs text-white">{vaccine.name}</p>
+        {/* Display player's deck in a grid */}
+        <div className="text-center mb-4">
+          <p className="text-lg font-semibold text-white">Your Deck:</p>
+          <div className="grid grid-cols-1 gap-4">
+            {/* Vaccines */}
+            <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
+              <h2 className="font-semibold text-white mb-2">Vaccines</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+                {playerDeck.vaccines.map((vaccineId, i) => {
+                  const vaccine = cardsData.find(card => card.id === vaccineId && card.type === 'vaccine');
+                  return vaccine ? (
+                    <div 
+                      key={i} 
+                      className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => handleCardClick(vaccine)}
+                    >
+                      <img
+                        src={vaccine.image}
+                        alt={vaccine.name}
+                        className="w-20 h-18 object-cover rounded"
+                      />
+                      <p className="mt-1 text-xs text-white">{vaccine.name}</p>
+                    </div>
+                  ) : null;
+                })}
+              </div>
             </div>
-          ) : null;
-        })}
-      </div>
-    </div>
-    {/* Viruses */}
-    <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
-      <h2 className="font-semibold text-white mb-2">Viruses</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-        {computerDeck.viruses.map((virusId, i) => {
-          const virus = cardsData.find(card => card.id === virusId && card.type === 'virus');
-          return virus ? (
-            <div key={i} className="flex flex-col items-center">
-              <img
-                src={virus.image}
-                alt={virus.name}
-                className="w-20 h-18 object-cover rounded"
-              />
-              <p className="mt-1 text-xs text-white">{virus.name}</p>
+            {/* Viruses */}
+            <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
+              <h2 className="font-semibold text-white mb-2">Viruses</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 justify-self-center gap-3">
+                {playerDeck.viruses.map((virusId, i) => {
+                  const virus = cardsData.find(card => card.id === virusId && card.type === 'virus');
+                  return virus ? (
+                    <div key={i} className="flex flex-col items-center">
+                      <img
+                        src={virus.image}
+                        alt={virus.name}
+                        className="w-20 h-18 object-cover rounded"
+                      />
+                      <p className="mt-1 text-xs text-white">{virus.name}</p>
+                    </div>
+                  ) : null;
+                })}
+              </div>
             </div>
-          ) : null;
-        })}
-      </div>
-    </div>
-  </div>
-</div>
+          </div>
+        </div>
+
+        {/* Display computer's deck in a grid */}
+        <div className="text-center mb-4">
+          <p className="text-lg font-semibold text-white">Computer's Deck:</p>
+          <div className="grid grid-cols-1 gap-4">
+            {/* Vaccines */}
+            <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
+              <h2 className="font-semibold text-white mb-2">Vaccines</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+                {computerDeck.vaccines.map((vaccineId, i) => {
+                  const vaccine = cardsData.find(card => card.id === vaccineId && card.type === 'vaccine');
+                  return vaccine ? (
+                    <div 
+                      key={i} 
+                      className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => handleCardClick(vaccine)}
+                    >
+                      <img
+                        src={vaccine.image}
+                        alt={vaccine.name}
+                        className="w-20 h-18 object-cover rounded"
+                      />
+                      <p className="mt-1 text-xs text-white">{vaccine.name}</p>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            </div>
+            {/* Viruses */}
+            <div className="p-4 bg-gray-800 bg-opacity-80 rounded">
+              <h2 className="font-semibold text-white mb-2">Viruses</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+                {computerDeck.viruses.map((virusId, i) => {
+                  const virus = cardsData.find(card => card.id === virusId && card.type === 'virus');
+                  return virus ? (
+                    <div key={i} className="flex flex-col items-center">
+                      <img
+                        src={virus.image}
+                        alt={virus.name}
+                        className="w-20 h-18 object-cover rounded"
+                      />
+                      <p className="mt-1 text-xs text-white">{virus.name}</p>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Battle button */}
         <div className="text-center">
@@ -284,7 +313,7 @@ const PvEBattle = () => {
   <div className="fixed inset-0 z-50 bg-black/90 flex flex-col overflow-auto">
     <div className="p-8 flex-1 flex flex-col items-center justify-center">
       <h2 className="text-2xl font-bold text-center mb-4 text-[#66FCF1]">
-        Battle Animations
+        Computer vs. Player 
       </h2>
       {currentEventIndex < attackEvents.length ? (
         currentStep < stepDelays.length - 1 ? (

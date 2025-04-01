@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ActionNavbar from '../../components/ActionNavbar';
 import { cardsData } from '../../assets/cardsData';
+import { FaInfoCircle } from 'react-icons/fa';
+import { Card, CardMedia, Typography, Button } from '@mui/material';
 
 const DeckBuilder = () => {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ const DeckBuilder = () => {
   const [selectedViruses, setSelectedViruses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [previewCard, setPreviewCard] = useState(null);
 
   // Fetch unlocked cards from the shop endpoint.
   useEffect(() => {
@@ -108,20 +111,32 @@ const DeckBuilder = () => {
       );
       alert(response.data.message);
       setCurrentDeck(deck);
+      navigate('/games/PvE-battle');
     } catch (error) {
       console.error('Error saving deck:', error);
       alert(error.response?.data?.error || 'Failed to save deck.');
     }
   };
 
-  // Battle Now navigates to the PvE battle page if the deck is not completely empty.
-  const handleBattleNow = () => {
-    if (selectedVaccines.length === 0 && selectedViruses.length === 0) {
-      alert('Your deck is empty. Please select some cards.');
-      return;
-    }
-    navigate('/games/PvE-battle');
+  const handleInfoClick = (e, card) => {
+    e.stopPropagation();
+    setPreviewCard(card);
   };
+
+    // Helper function to get glow style based on rarity
+    const getGlowStyle = (rarity) => {
+      switch (rarity?.toLowerCase()) {
+        case 'legendary':
+          return { boxShadow: '0 0 20px 4px #FFD700' }; // Gold glow
+        case 'epic':
+          return { boxShadow: '0 0 15px 4px #9C27B0' }; // Purple glow
+        case 'rare':
+          return { boxShadow: '0 0 15px 4px #2196F3' }; // Blue glow
+        case 'common':
+        default:
+          return { boxShadow: '0 0 8px 2px #9E9E9E' }; // Subtle gray glow
+      }
+    };  
 
   if (loading)
     return (
@@ -185,18 +200,12 @@ const DeckBuilder = () => {
           </div>
         </section>
 
-        <div className="text-center mt-8 space-x-4">
+        <div className="text-center mt-8">
           <button
             onClick={handleSaveDeck}
             className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition"
           >
             Save Deck
-          </button>
-          <button
-            onClick={handleBattleNow}
-            className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          >
-            Battle Now
           </button>
         </div>
 
@@ -207,13 +216,19 @@ const DeckBuilder = () => {
             {unlockedCards.filter(isVaccine).map(card => (
               <div
                 key={card.id}
-                className={`p-1 border-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
+                className={`relative p-1 border-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
                   selectedVaccines.find(c => c.id === card.id)
                     ? "border-green-500"
                     : "border-gray-300"
                 }`}
                 onClick={() => toggleSelection(card)}
               >
+                <button
+                  className="absolute top-1 right-1 text-white hover:text-[#66FCF1] transition-colors"
+                  onClick={(e) => handleInfoClick(e, card)}
+                >
+                  <FaInfoCircle size={20} />
+                </button>
                 <img
                   src={card.image}
                   alt={card.name}
@@ -231,13 +246,19 @@ const DeckBuilder = () => {
             {unlockedCards.filter(isVirus).map(card => (
               <div
                 key={card.id}
-                className={`border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
+                className={`relative border p-4 rounded cursor-pointer text-center transition-all hover:shadow-lg ${
                   selectedViruses.find(c => c.id === card.id)
                     ? "border-green-500"
                     : "border-gray-300"
                 }`}
                 onClick={() => toggleSelection(card)}
               >
+                <button
+                  className="absolute top-1 right-1 text-white hover:text-[#66FCF1] transition-colors"
+                  onClick={(e) => handleInfoClick(e, card)}
+                >
+                  <FaInfoCircle size={20} />
+                </button>
                 <img
                   src={card.image}
                   alt={card.name}
@@ -249,6 +270,38 @@ const DeckBuilder = () => {
           </div>
         </section>
       </div>
+
+      {previewCard && (
+        <div
+          className="fixed inset-0 bg-transparent backdrop-blur-lg flex justify-center items-center p-4 z-50"
+          onClick={() => setPreviewCard(null)}
+        >
+          <div
+            className="p-4 rounded-lg max-w-xs w-full bg-transparent"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={previewCard.image}
+              alt={previewCard.name}
+              className="w-full mb-4 object-cover rounded"
+              style={getGlowStyle(previewCard.rarity)}
+            />
+            <div>
+              <Typography align="center" style={{ color: '#C5C6C7' }} gutterBottom>
+                {previewCard.name}
+              </Typography>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => setPreviewCard(null)}
+                style={{ backgroundColor: '#66FCF1', color: '#0B0C10', fontSize: '0.8rem' }}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ActionNavbar />
     </div>

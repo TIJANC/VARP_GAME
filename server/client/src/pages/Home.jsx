@@ -5,6 +5,7 @@ import ActionNavbar from '../components/ActionNavbar';
 import { FaMedal, FaCoins } from 'react-icons/fa';
 import { GiUpgrade } from "react-icons/gi";
 import ChestOpeningAnimation from './ChestAnimation';
+import { motion, AnimatePresence, easeIn } from 'framer-motion';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -24,10 +25,13 @@ const Home = () => {
   const [chestMessage, setChestMessage] = useState('');
   const [drawnCard, setDrawnCard] = useState(null);
 
-  // State for free chest timer (in seconds)
+  // Timer state for free chest (in seconds)
   const [freeChestTimer, setFreeChestTimer] = useState(0);
-  // New state to control the chest animation.
-  const [showChestAnimation, setShowChestAnimation] = useState(false);
+  // State to control premium chest animation.
+  const [showPremiumChestAnimation, setShowPremiumChestAnimation] = useState(false);
+
+  // Add a state to store the card data temporarily
+  const [storedCardData, setStoredCardData] = useState(null);
 
   const levelMap = {
     noob: 1,
@@ -127,39 +131,8 @@ const Home = () => {
     fetchLeaderboard();
   }, [navigate]);
 
-  // Handler to open a free chest.
-  const openFreeChest = async () => {
-    if (freeChestTimer > 0) return; // Prevent if timer hasn't reached zero.
-    // Instead of calling API immediately, we trigger the chest animation.
-    setShowChestAnimation(false);
-  };
-
-  // Callback triggered when chest animation completes.
-  const handleChestAnimationComplete = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('/api/player/open-free-chest', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setChestMessage(res.data.message);
-      setDrawnCard(res.data.card);
-      // Reset the timer after a successful open to 5 minutes.
-      setFreeChestTimer(300);
-    } catch (err) {
-      console.error(err);
-      if (err.response?.data?.error) {
-        setChestMessage(err.response.data.error);
-      } else {
-        setChestMessage('An error occurred opening the free chest.');
-      }
-    }
-    setShowChestAnimation(false);
-  };
-
-  // Handler to buy a premium chest remains unchanged.
+  // Premium chest purchase handler
   const buyPremiumChest = async () => {
-    setChestMessage('');
-    setDrawnCard(null);
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post(
@@ -167,20 +140,80 @@ const Home = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setChestMessage(res.data.message);
-      setDrawnCard(res.data.card);
+      
+      // Update user data first
       if (res.data.coinsRemaining !== undefined) {
         setUserData((prev) => ({ ...prev, coins: res.data.coinsRemaining }));
       }
+      
+      // Then show the animation
+      setShowPremiumChestAnimation(true);
+      
+      // Store the card data to show after animation
+      const cardData = {
+        message: res.data.message,
+        card: res.data.card
+      };
+      
+      return cardData;
     } catch (err) {
       console.error(err);
-      if (err.response?.data?.error) {
-        setChestMessage(err.response.data.error);
-      } else {
-        setChestMessage('An error occurred buying the premium chest.');
-      }
+      const errorMessage = err.response?.data?.error || 'An error occurred buying the premium chest.';
+      setChestMessage(errorMessage);
+      return null;
     }
   };
+
+  // Callback for premium chest animation completion
+  const handlePremiumChestAnimationComplete = async () => {
+    setShowPremiumChestAnimation(false);
+    if (storedCardData) {
+      setChestMessage(storedCardData.message);
+      setDrawnCard(storedCardData.card);
+      setStoredCardData(null);
+    }
+  };
+
+  // Handle chest click
+  const handleChestClick = async () => {
+    if (userData.coins < 50) {
+      alert("Not enough coins to buy the premium chest.");
+      return;
+    }
+    
+    // Clear previous messages and cards
+    setChestMessage('');
+    setDrawnCard(null);
+    
+    // Buy chest and get card data
+    const cardData = await buyPremiumChest();
+    if (cardData) {
+      setStoredCardData(cardData);
+    }
+  };
+
+  // Helper function to get glow style based on rarity.
+  const getGlowStyle = (rarity) => {
+    switch (rarity.toLowerCase()) {
+      case 'legendary':
+        return { boxShadow: '0 0 20px 4px #FFD700' };
+      case 'epic':
+        return { boxShadow: '0 0 15px 4px #9C27B0' };
+      case 'rare':
+        return { boxShadow: '0 0 15px 4px #2196F3' };
+      case 'common':
+      default:
+        return { boxShadow: '0 0 10px 4px #9E9E9E' };
+    }
+  };
+
+  // Modal opening animation variants.
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { type: 'spring', ease: "easeIn", stiffness: 300, damping: 20 } },
+    exit: { opacity: 0, scale: 0, transition: { duration: 1 } },
+  };
+  
 
   return (
     <div className="relative w-full min-h-screen p-4 overflow-y-auto bg-[#0B0C10]">
@@ -190,7 +223,7 @@ const Home = () => {
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto bg-transparent shadow-md p-8 rounded-lg">
-        {/* Top section with Horizontal Stats, Character Image and Username */}
+        {/* Top section with stats, character image, and username */}
         <div className="flex flex-col items-center">
           <div className="flex justify-around w-full mt-6">
             <div className="flex flex-col items-center">
@@ -204,9 +237,7 @@ const Home = () => {
               <div className="w-32 bg-gray-800 rounded h-2 mt-1">
                 <div
                   className="bg-[#66FCF1] h-2 rounded"
-                  style={{
-                    width: `${(userData.exp / userData.nextLevelExp) * 100}%`,
-                  }}
+                  style={{ width: `${(userData.exp / userData.nextLevelExp) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -238,43 +269,24 @@ const Home = () => {
               </button>
             </div>
 
-            {/* Chest Images for Free & Premium Chests */}
-            <div className="flex justify-center my-6">
-              <div className="mx-4 text-center">
-                {/* Render ChestOpeningAnimation when ready */}
-                {freeChestTimer === 0 ? (
-                  showChestAnimation ? (
-                    <ChestOpeningAnimation
-                      closedChest="/Images/chest_simple.png"
-                      openChest="/Images/chest_simple_open.png"
-                      onOpenComplete={handleChestAnimationComplete}
-                    />
-                  ) : (
-                    <img
-                      src="/Images/chest_simple.png"
-                      alt="Free Chest"
-                      className="w-32 h-32 object-contain cursor-pointer hover:scale-105 transition-transform"
-                      onClick={() => setShowChestAnimation(true)}
-                    />
-                  )
-                ) : (
-                  <span className="block mt-2 text-gray-300">
-                    Available in: {formatTime(freeChestTimer)}
-                  </span>
-                )}
-                {freeChestTimer === 0 && !showChestAnimation && (
-                  <span className="block mt-2 text-gray-300">Open Free Chest</span>
-                )}
-              </div>
-              <div className="mx-4 text-center">
-                <img
-                  src="/Images/chest_premium.png"
-                  alt="Premium Chest"
-                  className="cursor-pointer w-32 h-32 object-contain hover:scale-105 transition-transform"
-                  onClick={buyPremiumChest}
+            {/* Premium Chest Section with Animation */}
+            <div className="mx-4 justify-items-center">
+              {showPremiumChestAnimation ? (
+                <ChestOpeningAnimation
+                  closedChest="/Images/chest_premium.png"
+                  openChest="/Images/chest_premium_open.png"
+                  onOpenComplete={handlePremiumChestAnimationComplete}
                 />
-                <span className="block mt-2 text-gray-300">Premium Chest 50 coins</span>
-              </div>
+              ) : (
+                <div onClick={handleChestClick}>
+                  <img
+                    src="/Images/chest_premium.png"
+                    alt="Premium Chest"
+                    className="cursor-pointer w-32 h-32 object-contain"
+                  />
+                </div>
+              )}
+              <span className="block mt-2 text-gray-300">Chest 50 coins</span>
             </div>
 
             {chestMessage && (
@@ -283,15 +295,38 @@ const Home = () => {
               </div>
             )}
             {drawnCard && (
-              <div className="text-center">
-                <p className="text-gray-300">You received: {drawnCard.name}</p>
-                <p className="text-gray-300">Rarity: {drawnCard.rarity}</p>
-                <img
-                  src={drawnCard.image}
-                  alt={drawnCard.name}
-                  className="h-24 mx-auto"
-                />
-              </div>
+              <AnimatePresence>
+                <motion.div
+                  className="fixed inset-0 backdrop-blur-lg flex justify-center items-center p-4 z-50"
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={modalVariants}
+                  onClick={() => setDrawnCard(null)}
+                >
+                  <motion.div
+                    className="p-4 rounded-lg max-w-xs w-full"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={drawnCard.image}
+                      alt={drawnCard.name}
+                      className="w-full h-auto object-cover rounded"
+                      style={getGlowStyle(drawnCard.rarity)}
+                    />
+                    <div className="mt-4">
+                      <p className="text-center text-white font-bold">{drawnCard.name}</p>
+                      <p className="text-center text-gray-300">Rarity: {drawnCard.rarity}</p>
+                    </div>
+                    <button
+                      className="mt-4 w-full px-4 py-2 bg-[#66FCF1] text-[#0B0C10] rounded hover:bg-[#45A29E] transition"
+                      onClick={() => setDrawnCard(null)}
+                    >
+                      Close
+                    </button>
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>
             )}
 
             <div className="mt-8">

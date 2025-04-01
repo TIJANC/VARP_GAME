@@ -7,11 +7,9 @@ const vaccineData = require('../utils/vaccineData');
 router.get('/generate-questions', (req, res) => {
   try {
     const questions = vaccineData.map((vaccine) => {
-      // Get a random question type from our extended list
       const questionType = getRandomQuestionType();
       let question = '';
       let correctAnswer = '';
-      let distractors = [];
 
       // Build question based on type.
       switch (questionType) {
@@ -53,16 +51,18 @@ router.get('/generate-questions', (req, res) => {
           break;
       }
 
-      // Generate distractors for the selected question type.
-      distractors = generateDistractors(questionType, correctAnswer);
+      // Generate appropriate number of distractors based on question type
+      const numberOfDistractors = questionType === 'obbligatorietà' ? 1 : 3;
+      const distractors = generateUniqueDistractors(questionType, correctAnswer, numberOfDistractors);
 
-      // Finalize options ensuring no duplicate of the correct answer.
-      const options = shuffleArray([correctAnswer, ...distractors.filter(d => d !== correctAnswer)]);
+      // Shuffle options including the correct answer
+      const options = shuffleArray([correctAnswer, ...distractors]);
 
       return {
         question,
         options,
         correctAnswer,
+        questionType, // Added to help frontend handle different question types
       };
     });
 
@@ -83,11 +83,17 @@ function getRandomQuestionType() {
   return types[Math.floor(Math.random() * types.length)];
 }
 
-// Generate distractors for a given type.
-// It maps over vaccineData, extracts the field based on the type, and filters out the correct answer.
-function generateDistractors(type, correctAnswer) {
-  const otherValues = vaccineData
-    .map((vaccine) => {
+// Generate unique distractors
+function generateUniqueDistractors(type, correctAnswer, count) {
+  // Special case for obbligatorietà (yes/no questions)
+  if (type === 'obbligatorietà') {
+    // Return only one distractor that's the opposite of the correct answer
+    return [correctAnswer === 'Si' ? 'No' : 'Si'];
+  }
+
+  // For all other question types, continue with multiple choice logic
+  const allValues = vaccineData
+    .map(vaccine => {
       switch (type) {
         case 'antigene':
           return vaccine.antigene;
@@ -101,8 +107,6 @@ function generateDistractors(type, correctAnswer) {
           return vaccine.patologiaDiInteresse;
         case 'calendarioVaccinale':
           return vaccine.calendarioVaccinale;
-        case 'obbligatorietà':
-          return vaccine.obbligatorietà;
         case 'posologia':
           return vaccine.posologia;
         case 'somministrazione':
@@ -110,7 +114,38 @@ function generateDistractors(type, correctAnswer) {
       }
     })
     .filter(value => value && value !== correctAnswer);
-  return shuffleArray(otherValues).slice(0, 3); // return up to 3 distractors
+
+  // Remove duplicates
+  const uniqueValues = [...new Set(allValues)];
+
+  // If we don't have enough unique values, generate some variations
+  if (uniqueValues.length < count && type !== 'obbligatorietà') {
+    switch (type) {
+      case 'dataAutorizzazione':
+        const year = parseInt(correctAnswer);
+        for (let i = 1; i <= 5; i++) {
+          uniqueValues.push(String(year + i));
+          uniqueValues.push(String(year - i));
+        }
+        break;
+      case 'posologia':
+        const doses = parseInt(correctAnswer.split(' ')[0]);
+        for (let i = 1; i <= 5; i++) {
+          uniqueValues.push(`${doses + i} dosi`);
+          if (doses - i > 0) uniqueValues.push(`${doses - i} dosi`);
+        }
+        break;
+      // Add more cases for other types if needed
+    }
+  }
+
+  // For obbligatorietà, return only one distractor
+  // For other types, return the requested number of distractors
+  const numberOfDistractors = type === 'obbligatorietà' ? 1 : count;
+
+  return shuffleArray(uniqueValues)
+    .slice(0, numberOfDistractors)
+    .filter(Boolean);
 }
 
 // Simple shuffle function

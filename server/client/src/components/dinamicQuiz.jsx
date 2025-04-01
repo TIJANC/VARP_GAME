@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { IoMdExit } from "react-icons/io";
+import { motion } from 'framer-motion';
 
 const Quiz = () => {
   const [questions, setQuestions] = useState([]);
@@ -73,6 +74,12 @@ const Quiz = () => {
     }
   };
 
+  // Animation variants
+  const buttonVariants = {
+    hover: { scale: 1.05 },
+    tap: { scale: 0.95 }
+  };
+
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center text-2xl text-white">
@@ -94,12 +101,15 @@ const Quiz = () => {
       {/* Main Content Container */}
       <div className="relative z-10 max-w-3xl mx-auto  p-8 rounded-lg">
         {/* End Quiz Button */}
-        <button 
-          className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-all"
+        <motion.button 
+          className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
           onClick={endQuiz}
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
         >
           <IoMdExit className='sm:text-2xl lg:text-3xl'/>
-        </button>
+        </motion.button>
         
         {!quizCompleted ? (
           questions.length > 0 && currentQuestion < questions.length ? (
@@ -107,15 +117,21 @@ const Quiz = () => {
               <h3 className="text-2xl font-bold text-[#66FCF1] mb-4">
                 {questions[currentQuestion].question}
               </h3>
-              <div className="grid grid-cols-1 gap-3">
+              <div className={`grid gap-3 ${questions[currentQuestion].questionType === 'obbligatorietà' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 {questions[currentQuestion].options.map((option, index) => (
-                  <button 
+                  <motion.button 
                     key={index} 
                     onClick={() => handleAnswer(option)}
-                    className="px-4 py-2 bg-[#45A29E] text-white rounded hover:bg-[#66FCF1] transition-colors"
+                    className={`px-4 py-2 bg-[#45A29E] text-white rounded 
+                      ${questions[currentQuestion].questionType === 'obbligatorietà' 
+                        ? 'text-xl font-bold' 
+                        : ''}`}
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     {option}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -132,12 +148,15 @@ const Quiz = () => {
                 <p className="text-lg">EXP Earned: {earnedExp}</p>
               </div>
             )}
-            <button 
-              className="mt-4 px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all"
+            <motion.button 
+              className="mt-4 px-6 py-3 bg-blue-600 text-white rounded"
               onClick={() => window.location.href = '/home'}
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
             >
               Return to Home
-            </button>
+            </motion.button>
           </div>
         )}
       </div>

@@ -7,80 +7,127 @@ const ActionNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const options = [
-    { label: 'Shop', route: '/shop', iconClass: 'la-store' },
-    { label: 'Trade Center', route: '/trade-center', iconClass: 'la-exchange-alt' },
-    { label: 'CardGame', route: '/games/card-game', iconClass: 'la-gamepad' },
-    { label: 'Home', route: '/home', iconClass: 'la-home' },
-    { label: 'Forum', route: '/forum', iconClass: 'la-comments' },
-    { label: 'Profile', route: '/profile', iconClass: 'la-user' },
+    { label: 'Gallery', route: '/shop', iconClass: 'la-store', color: '#FF6B6B' },
+    { label: 'Trade Center', route: '/trade-center', iconClass: 'la-exchange-alt', color: '#4ECDC4' },
+    { label: 'CardGame', route: '/games/PvE-battle', iconClass: 'la-gamepad', color: '#FFE66D' },
+    { label: 'Home', route: '/home', iconClass: 'la-home', color: '#1A535C' },
+    { label: 'Forum', route: '/forum', iconClass: 'la-comments', color: '#FF9F1C' },
+    { label: 'Profile', route: '/profile', iconClass: 'la-user', color: '#7209B7' },
   ];
 
-  // Variants for the toggle button rotation.
   const toggleVariants = {
-    closed: { rotate: 0 },
-    open: { rotate: 90 },
+    closed: { 
+      rotate: 0,
+      scale: 1,
+    },
+    open: { 
+      rotate: 180,
+      scale: 1.2,
+    },
   };
 
-  // Variants for the dropdown container.
-  const dropdownVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1 },
+  const menuVariants = {
+    closed: {
+      scale: 0,
+      opacity: 0,
+      transition: {
+        staggerChildren: 0.1,
+        staggerDirection: -1,
+      }
+    },
+    open: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        delayChildren: 0.2,
+        staggerChildren: 0.1,
+      }
+    }
   };
 
-  // Variants for each menu item.
   const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 },
+    closed: { 
+      x: -16,
+      opacity: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300
+      }
+    },
+    open: { 
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: {
+      scale: 1.1,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    },
+    tap: {
+      scale: 0.9
+    }
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed bottom-4 right-4 z-50">
       {/* Toggle Button */}
       <motion.button
-        className="p-2 text-3xl bg-[#0B0C10] bg-opacity-90 shadow rounded-full focus:outline-none text-[#66FCF1]"
+        className="p-4 text-3xl bg-[#0B0C10] shadow-lg rounded-full focus:outline-none text-[#66FCF1] border-2 border-[#66FCF1]"
         onClick={() => setIsOpen(!isOpen)}
         title={isOpen ? "Close Navigation" : "Open Navigation"}
-        animate={isOpen ? "open" : "closed"}
         variants={toggleVariants}
-        transition={{ duration: 0.3 }}
-        originX={0.5}
-        originY={0.5}
+        animate={isOpen ? "open" : "closed"}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
       >
-        {isOpen ? (
-          <i className="la la-times" aria-hidden="true"></i>
-        ) : (
-          <i className="la la-bars" aria-hidden="true"></i>
-        )}
+        <i className={`la ${isOpen ? 'la-times' : 'la-bars'}`} aria-hidden="true"></i>
       </motion.button>
 
-      {/* Dropdown Menu */}
+      {/* Menu Items */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="mt-2 bg-[#0B0C10] bg-opacity-90 rounded shadow p-2 flex flex-col space-y-2 border border-[#66FCF1]"
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            variants={dropdownVariants}
-            transition={{ duration: 0.3 }}
+            className="absolute bottom-20 right-0 bg-[#0B0C10] rounded-lg shadow-xl p-4 border border-[#66FCF1]"
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={menuVariants}
           >
-            {options.map(({ label, route, iconClass }, index) => (
-              <motion.button
-                key={index}
-                onClick={() => {
-                  navigate(route);
-                  setIsOpen(false);
-                }}
-                title={label}
-                className="flex items-center space-x-2 text-2xl focus:outline-none text-[#66FCF1]"
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
-                <i className={`la ${iconClass}`} aria-hidden="true"></i>
-                <span className="text-base">{label}</span>
-              </motion.button>
-            ))}
+            <div className="flex flex-col space-y-3">
+              {options.map(({ label, route, iconClass, color }, index) => (
+                <motion.button
+                  key={label}
+                  onClick={() => {
+                    navigate(route);
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-gray-800 group"
+                  variants={itemVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  custom={index}
+                >
+                  <motion.div
+                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: color }}
+                    variants={buttonVariants}
+                  >
+                    <i className={`la ${iconClass} text-2xl text-white`} aria-hidden="true"></i>
+                  </motion.div>
+                  <span className="text-[#66FCF1] font-medium">{label}</span>
+                </motion.button>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -102,7 +102,7 @@ const Shop = () => {
       {/* Main Content Card */}
       <div className="relative z-10 max-w-7xl mx-auto bg-transparent bg-opacity-50 shadow-md p-6 sm:p-8 rounded-lg">
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 text-[#66FCF1]">
-          Card Shop
+          Card Collection
         </h1>
 
         {/* Horizontal Stats Row */}
