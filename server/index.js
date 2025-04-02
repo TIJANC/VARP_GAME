@@ -7,6 +7,7 @@ const path = require('path');
 const playerProfileRoutes = require('./routes/playerProfile'); 
 const forumRoutes = require('./routes/forum')
 const dinamicQuizRoutes = require('./routes/dinamicQuiz')
+const PvPRoutes = require('./routes/pvp')
 
 dotenv.config();
 
@@ -30,10 +31,11 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes); 
-app.use('/api/player', playerProfileRoutes); 
-app.use('/api/forum', forumRoutes);
+app.use('/api/auth', authRoutes)
+app.use('/api/player', playerProfileRoutes)
+app.use('/api/forum', forumRoutes)
 app.use('/api/dinamicQuiz', dinamicQuizRoutes)
+app.use('/api/pvp', PvPRoutes)
 
 // Serve React Frontend
 app.use(express.static(path.join(__dirname, "/client/dist")));

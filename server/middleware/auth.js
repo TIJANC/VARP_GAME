@@ -12,7 +12,6 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded token:', decoded); // Log decoded token for debugging
     req.userId = decoded.userId;
     next();
   } catch (error) {

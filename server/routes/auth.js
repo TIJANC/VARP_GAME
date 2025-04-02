@@ -63,7 +63,6 @@ router.get('/verify-email/:token', async (req, res) => {
   try {
     // Decode token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded token:', decoded);
 
     // Update isVerified using findByIdAndUpdate
     const updatedUser = await User.findByIdAndUpdate(
@@ -77,7 +76,6 @@ router.get('/verify-email/:token', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('User successfully verified:', updatedUser);
     res.json({ message: 'Email verified successfully!' });
   } catch (error) {
     console.error('Error during email verification:', error.message);
@@ -90,7 +88,6 @@ router.get('/verify-email/:token', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  console.log('Login request:', { email, password });
 
   try {
     const user = await User.findOne({ email });

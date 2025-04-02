@@ -249,7 +249,7 @@ const Home = () => {
           <img
             src={getCharacterImage()}
             alt="User Avatar"
-            className="w-40 h-40 object-cover mx-auto mt-6"
+            className="w-40 h-40 object-contain mx-auto mt-6"
           />
           <strong className="block text-2xl mt-4 text-[#66FCF1]">
             {userInfo.username || 'Not provided'}

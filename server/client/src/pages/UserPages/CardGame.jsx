@@ -111,7 +111,7 @@ const DeckBuilder = () => {
       );
       alert(response.data.message);
       setCurrentDeck(deck);
-      navigate('/games/PvE-battle');
+      navigate('/games');
     } catch (error) {
       console.error('Error saving deck:', error);
       alert(error.response?.data?.error || 'Failed to save deck.');

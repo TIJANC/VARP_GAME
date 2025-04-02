@@ -60,7 +60,6 @@ const Quiz = () => {
   const sendReward = async () => {
     try {
       const token = localStorage.getItem('token');
-      console.log('Sending rewards:', { correctAnswers: score, answeredQuestions });
       const response = await axios.post(
         '/api/player/reward',
         { correctAnswers: score, answeredQuestions },

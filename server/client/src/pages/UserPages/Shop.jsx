@@ -18,14 +18,12 @@ const Shop = () => {
   // Function to handle selling a card.
   const handleSellCard = async (cardId) => {
     try {
-      console.log('Attempting to sell card with ID:', cardId);
       const token = localStorage.getItem('token');
       const response = await axios.post(
         '/api/player/sell-card',
         { cardId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log('Sell card response:', response.data);
       alert(response.data.message);
       setUserInfo((prev) => ({ ...prev, coins: response.data.coins }));
       setCards((prev) =>
@@ -112,10 +110,6 @@ const Shop = () => {
             <span className="text-lg text-gray-300">Level: {userInfo.currentLevel}</span>
           </div>
           <div className="flex flex-col items-center">
-            <FaQuestionCircle className="text-3xl text-[#66FCF1]" />
-            <span className="text-lg text-gray-300">Answered: {userInfo.answeredQuestions}</span>
-          </div>
-          <div className="flex flex-col items-center">
             <FaCoins className="text-3xl" style={{ color: '#FFD700' }} />
             <span className="text-lg text-gray-300">{userInfo.coins} Coins</span>
           </div>
@@ -161,7 +155,7 @@ const Shop = () => {
                   </div>
                 </Card>
                 {/* Quantity indicator */}
-                <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                <div className="absolute lg:top-1 lg:right-16 md:top-5 md:right-2 transform translate-x-1/2 -translate-y-1/2 bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {card.quantity}
                 </div>
               </div>

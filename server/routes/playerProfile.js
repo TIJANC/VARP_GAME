@@ -225,8 +225,6 @@ router.post('/invite', authenticateUser, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    console.log('Sending email to:', email);
-    console.log('Invited by user:', user.username);
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -236,7 +234,6 @@ router.post('/invite', authenticateUser, async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('Invitation email sent successfully');
 
     // Removed: user.taskProgress.friendsInvited
 
@@ -342,7 +339,6 @@ router.post('/buy-premium-chest', authenticateUser, async (req, res) => {
 
 router.post('/sell-card', authenticateUser, async (req, res) => {
   try {
-    console.log('Sell-card request received:', req.body);
     const { cardId } = req.body;
 
     if (!cardId) {
@@ -356,7 +352,6 @@ router.post('/sell-card', authenticateUser, async (req, res) => {
       console.log(`User with ID ${req.userId} not found.`);
       return res.status(404).json({ error: 'User not found' });
     }
-    console.log('User found:', user._id);
 
     // 2) Find the card in user.cards.
     const userCard = user.cards.find((c) => c.id === cardId);
@@ -368,7 +363,6 @@ router.post('/sell-card', authenticateUser, async (req, res) => {
       console.log(`Not enough duplicates to sell card #${cardId}. Quantity: ${userCard.quantity}`);
       return res.status(400).json({ error: 'You can only sell duplicates (quantity > 1)' });
     }
-    console.log(`User card before selling: ${JSON.stringify(userCard)}`);
 
     // 3) Determine the card’s rarity.
     const defaultCard = cardsData.find((dc) => dc.id === cardId);
@@ -376,7 +370,6 @@ router.post('/sell-card', authenticateUser, async (req, res) => {
       console.log(`Card definition not found for card #${cardId}`);
       return res.status(400).json({ error: 'Card definition not found.' });
     }
-    console.log('Default card found:', defaultCard);
 
     // Define a reward map based on rarity.
     const rarityToCoin = {
@@ -389,18 +382,14 @@ router.post('/sell-card', authenticateUser, async (req, res) => {
     // Normalize the rarity string.
     const cardRarity = defaultCard.rarity ? defaultCard.rarity.toLowerCase() : 'common';
     const sellReward = rarityToCoin[cardRarity] || 1;
-    console.log(`Card rarity: ${cardRarity}, Reward: ${sellReward}`);
 
     // 4) Reduce quantity by 1.
     userCard.quantity -= 1;
-    console.log(`New card quantity: ${userCard.quantity}`);
 
     // 5) Add coins to the user.
     user.coins += sellReward;
-    console.log(`User coins after selling: ${user.coins}`);
 
     await user.save();
-    console.log('User data saved successfully.');
 
     return res.json({
       message: `Sold one duplicate of card #${cardId} for ${sellReward} coin(s).`,

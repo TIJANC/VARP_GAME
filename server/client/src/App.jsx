@@ -14,11 +14,13 @@ import Shop from './pages/UserPages/Shop'
 import Profile from './pages/UserPages/Profile';
 import Forum from './pages/UserPages/Forum';
 import TradeCenter from './pages/UserPages/TradeCenter';
+import NotificationBell from './components/NotificationBell';
 // GAMES
 import Quiz from './components/dinamicQuiz';
 import CardGame from './pages/UserPages/CardGame';
 import PvEBattle from './pages/UserPages/PvEBattle';
 import PvPBattle from './pages/UserPages/PvPBattle';
+import BattleNavigation from './pages/UserPages/BattleNavigation';
 
 function App() {
   return (
@@ -39,6 +41,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/forum" element={<Forum />}/>
             <Route path="/games/dinamic-quiz" element={<Quiz />} />
+            <Route path="/games" element={<BattleNavigation />} />
             <Route path="/games/card-game" element={<CardGame />} />
             <Route path="/games/PvE-battle" element={<PvEBattle />} />
             <Route path="/games/PvP-battle" element={<PvPBattle />} />

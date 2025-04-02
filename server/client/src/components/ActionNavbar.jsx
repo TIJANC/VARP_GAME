@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import NotificationBell from './NotificationBell';
 
 const ActionNavbar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const options = [
+    { label: 'Home', route: '/home', iconClass: 'la-home', color: '#1A535C' },
+    { label: 'Notifications', component: NotificationBell, color: '#E63946' },
     { label: 'Gallery', route: '/shop', iconClass: 'la-store', color: '#FF6B6B' },
     { label: 'Trade Center', route: '/trade-center', iconClass: 'la-exchange-alt', color: '#4ECDC4' },
-    { label: 'CardGame', route: '/games/PvE-battle', iconClass: 'la-gamepad', color: '#FFE66D' },
-    { label: 'Home', route: '/home', iconClass: 'la-home', color: '#1A535C' },
+    { label: 'CardGame', route: '/games', iconClass: 'la-gamepad', color: '#FFE66D' },
     { label: 'Forum', route: '/forum', iconClass: 'la-comments', color: '#FF9F1C' },
     { label: 'Profile', route: '/profile', iconClass: 'la-user', color: '#7209B7' },
   ];
@@ -104,28 +106,34 @@ const ActionNavbar = () => {
             variants={menuVariants}
           >
             <div className="flex flex-col space-y-3">
-              {options.map(({ label, route, iconClass, color }, index) => (
-                <motion.button
-                  key={label}
-                  onClick={() => {
-                    navigate(route);
-                    setIsOpen(false);
-                  }}
+              {options.map((option, index) => (
+                <motion.div
+                  key={option.label}
                   className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-gray-800 group"
                   variants={itemVariants}
                   whileHover="hover"
                   whileTap="tap"
                   custom={index}
+                  onClick={() => {
+                    if (option.route) {
+                      navigate(option.route);
+                      setIsOpen(false);
+                    }
+                  }}
                 >
                   <motion.div
                     className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: color }}
+                    style={{ backgroundColor: option.color }}
                     variants={buttonVariants}
                   >
-                    <i className={`la ${iconClass} text-2xl text-white`} aria-hidden="true"></i>
+                    {option.component ? (
+                      <option.component />
+                    ) : (
+                      <i className={`la ${option.iconClass} text-2xl text-white`} aria-hidden="true"></i>
+                    )}
                   </motion.div>
-                  <span className="text-[#66FCF1] font-medium">{label}</span>
-                </motion.button>
+                  <span className="text-[#66FCF1] font-medium">{option.label}</span>
+                </motion.div>
               ))}
             </div>
           </motion.div>

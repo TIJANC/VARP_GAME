@@ -164,7 +164,7 @@ const Profile = () => {
         <div className="flex flex-col items-center">
           {/* Avatar Section */}
           <div className="w-32 h-32 mb-4">
-            <img src={getProfileCharacterImage()} alt="User Avatar" className="w-full h-full object-cover" />
+            <img src={getProfileCharacterImage()} alt="User Avatar" className="w-full h-full object-contain" />
           </div>
 
           {/* Profile Info */}
