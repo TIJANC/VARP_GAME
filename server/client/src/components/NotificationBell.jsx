@@ -30,7 +30,6 @@ const NotificationBell = () => {
         }
       });
 
-
       setNotifications(Array.isArray(response.data) ? response.data : []);
       setUnreadCount(
         Array.isArray(response.data) 
@@ -39,11 +38,6 @@ const NotificationBell = () => {
       );
     } catch (err) {
       console.error('Error fetching notifications:', err);
-      if (err.response?.status === 401) {
-        console.error('Authentication failed');
-      }
-      setNotifications([]);
-      setUnreadCount(0);
     }
   };
 
@@ -52,32 +46,63 @@ const NotificationBell = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
+      // Remove notification from UI immediately
+      setNotifications(prevNotifications => 
+        prevNotifications.filter(n => n._id !== notificationId)
+      );
+      
+      // Update unread count
+      setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+
+      // Then make the API call
       await axios.put(`/api/pvp/notifications/${notificationId}/read`, {}, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      fetchNotifications();
+
     } catch (err) {
       console.error('Error marking notification as read:', err);
+      // If there's an error, revert the changes
+      fetchNotifications();
     }
   };
 
-  const deleteNotification = async (notificationId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      await axios.delete(`/api/pvp/notifications/${notificationId}`, {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      fetchNotifications();
-    } catch (err) {
-      console.error('Error deleting notification:', err);
+  const renderNotificationContent = (notification) => {
+    switch (notification.type) {
+      case 'battle_result':
+        return (
+          <div>
+            <p className="text-gray-300 text-sm">{notification.content}</p>
+            {notification.battleData && (
+              <div className="mt-2 text-sm text-gray-400">
+                <p>VS {notification.battleData.opponentName}</p>
+                <p>Score: {notification.battleData.playerHits} - {notification.battleData.opponentHits}</p>
+              </div>
+            )}
+          </div>
+        );
+      case 'trade_accepted':
+        return (
+          <div>
+            <p className="text-gray-300 text-sm">{notification.content}</p>
+            {notification.tradeData && (
+              <div className="mt-2 text-sm text-gray-400">
+                <p>Received cards:</p>
+                {notification.tradeData.offeredCards.map((card, index) => (
+                  <p key={index} className={`text-sm ${
+                    card.type === 'virus' ? 'text-red-300' : 'text-blue-300'
+                  }`}>
+                    {card.name} × {card.quantity}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      default:
+        return <p className="text-gray-300 text-sm">{notification.content}</p>;
     }
   };
 
@@ -106,7 +131,7 @@ const NotificationBell = () => {
             className="absolute right-0 mt-2 w-80 bg-gray-800 rounded-lg shadow-lg z-50"
           >
             <div className="max-h-96 overflow-y-auto">
-              {Array.isArray(notifications) && notifications.length > 0 ? (
+              {notifications.length > 0 ? (
                 notifications.map((notification) => (
                   <motion.div
                     key={notification._id}
@@ -132,7 +157,7 @@ const NotificationBell = () => {
                         )}
                       </div>
                       <button
-                        onClick={() => deleteNotification(notification._id)}
+                        onClick={() => markAsRead(notification._id)}
                         className="text-gray-500 hover:text-red-500"
                       >
                         ×

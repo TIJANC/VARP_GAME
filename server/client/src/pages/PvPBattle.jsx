@@ -25,13 +25,9 @@ const PvPBattle = () => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [playerHits, setPlayerHits] = useState(0);
   const [opponentHits, setOpponentHits] = useState(0);
-  const [currentPlayerHits, setCurrentPlayerHits] = useState(0);
-  const [currentOpponentHits, setCurrentOpponentHits] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(1);
-  const baseStepDelays = [500, 1000, 1500, 2000, 1500]; // Original delays
 
-  // Update the stepDelays calculation to use the speed multiplier
-  const stepDelays = baseStepDelays.map(delay => delay / animationSpeed);
+  // Define delays for each step (in milliseconds)
+  const stepDelays = [500, 1000, 1500, 2000, 1500];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,13 +76,17 @@ const PvPBattle = () => {
   }, []);
 
   // Battle simulation function
-  const simulateBattle = (playerDeck, opponentDeck) => {
+// ... rest of the imports and code ...
+
+const simulateBattle = (playerDeck, opponentDeck) => {
     const events = [];
     let opponentHits = 0;
     let playerHits = 0;
-
+  
+    // Get the maximum number of rounds based on the deck with more viruses
     const maxRounds = Math.max(playerDeck.viruses.length, opponentDeck.viruses.length);
-
+  
+    // Simulate turns for each round
     for (let round = 0; round < maxRounds; round++) {
       // Opponent's turn (if they have a virus for this round)
       if (round < opponentDeck.viruses.length) {
@@ -101,19 +101,19 @@ const PvPBattle = () => {
               protectingVaccines.push(vaccine);
             }
           }
-
+  
           const effectiveThreshold = protectingVaccines.length > 0
             ? virus.deathProbability * protectingVaccines.reduce((acc, v) => acc * (1 - v.protectionMap[virus.id]), 1)
             : virus.deathProbability;
-
+  
           const rollValue = Math.random();
           const eventOutcome = rollValue < effectiveThreshold ? "HIT" : "MISS";
           if (eventOutcome === "HIT") { opponentHits++; }
-
+  
           events.push({
             round: round + 1,
             turn: 'opponent',
-            side: 'computer->player', // Changed to match AttackAnimation expected format
+            side: 'opponent->player',
             attacker: virus,
             isProtected: protectingVaccines.length > 0,
             defender: protectingVaccines[0] || null,
@@ -124,7 +124,7 @@ const PvPBattle = () => {
           });
         }
       }
-
+  
       // Player's turn (if they have a virus for this round)
       if (round < playerDeck.viruses.length) {
         const virusId = playerDeck.viruses[round];
@@ -138,19 +138,19 @@ const PvPBattle = () => {
               protectingVaccines.push(vaccine);
             }
           }
-
+  
           const effectiveThreshold = protectingVaccines.length > 0
             ? virus.deathProbability * protectingVaccines.reduce((acc, v) => acc * (1 - v.protectionMap[virus.id]), 1)
             : virus.deathProbability;
-
+  
           const rollValue = Math.random();
           const eventOutcome = rollValue < effectiveThreshold ? "HIT" : "MISS";
           if (eventOutcome === "HIT") { playerHits++; }
-
+  
           events.push({
             round: round + 1,
             turn: 'player',
-            side: 'player->computer', // Changed to match AttackAnimation expected format
+            side: 'player->opponent',
             attacker: virus,
             isProtected: protectingVaccines.length > 0,
             defender: protectingVaccines[0] || null,
@@ -162,21 +162,19 @@ const PvPBattle = () => {
         }
       }
     }
-
+  
     setAttackEvents(events);
     setPlayerHits(playerHits);
     setOpponentHits(opponentHits);
-
+  
     const logs = events.map(event => {
       const protectionInfo = event.isProtected
         ? `Protected by [${event.protectors.join(', ')}]`
         : "Not Protected";
-      // Keep the log arrows consistent with the visual direction
-      const direction = event.side === 'computer->player' ? '→' : '←';
-      return `Round ${event.round} (${event.turn}'s turn): ${event.attacker.name} attacks ${direction} with roll ${event.roll} | Threshold: ${event.threshold} | ${protectionInfo} | Outcome: ${event.outcome}.`;
+      return `Round ${event.round} (${event.turn}'s turn): ${event.attacker.name} attacks with roll ${event.roll} | Threshold: ${event.threshold} | ${protectionInfo} | Outcome: ${event.outcome}.`;
     });
     setBattleLog(logs);
-
+  
     return {
       outcome: playerHits > opponentHits ? "You won the battle!" : 
                playerHits < opponentHits ? "You lost the battle!" : 
@@ -185,7 +183,7 @@ const PvPBattle = () => {
       opponentHits
     };
   };
-
+  
   const handleBattleStart = async (opponent) => {
     if (!playerDeck || !isDeckValid(playerDeck)) {
       alert("Your deck is not valid for battle!");
@@ -224,21 +222,6 @@ const PvPBattle = () => {
   // Animation step effect
   useEffect(() => {
     if (showOverlay && attackEvents.length > 0 && currentEventIndex < attackEvents.length) {
-      // Calculate current scores up to this event
-      const currentScores = attackEvents.slice(0, currentEventIndex + 1).reduce((scores, event) => {
-        if (event.outcome === "HIT") {
-          if (event.turn === 'player') {
-            scores.player++;
-          } else {
-            scores.opponent++;
-          }
-        }
-        return scores;
-      }, { player: 0, opponent: 0 });
-
-      setCurrentPlayerHits(currentScores.player);
-      setCurrentOpponentHits(currentScores.opponent);
-
       if (currentStep < stepDelays.length - 1) {
         const timer = setTimeout(() => {
           setCurrentStep(currentStep + 1);
@@ -273,17 +256,6 @@ const PvPBattle = () => {
 
 
     return vaccineCount >= 4 && virusCount >= 4;
-  };
-
-  // Add handler functions for the buttons
-  const handleSkipAnimation = () => {
-    setCurrentEventIndex(attackEvents.length);
-    setCurrentPlayerHits(playerHits);
-    setCurrentOpponentHits(opponentHits);
-  };
-
-  const toggleSpeed = () => {
-    setAnimationSpeed(current => current === 1 ? 2 : 1);
   };
 
   if (loading) {
@@ -384,88 +356,21 @@ const PvPBattle = () => {
       {showOverlay && (
         <div className="fixed inset-0 z-50 bg-black/90 flex flex-col overflow-auto">
           <div className="p-8 flex-1 flex flex-col items-center justify-center">
-            {/* Header with control buttons */}
-            <div className="w-full flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-center text-[#66FCF1]">
-                {selectedOpponent?.username} vs. You
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={toggleSpeed}
-                  className={`px-3 py-1 rounded ${
-                    animationSpeed === 2 
-                      ? 'bg-yellow-600 hover:bg-yellow-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  } text-white transition-colors`}
-                >
-                  {animationSpeed === 2 ? '1x Speed' : '2x Speed'}
-                </button>
-                <button
-                  onClick={handleSkipAnimation}
-                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
-                >
-                  Skip Animation
-                </button>
-              </div>
-            </div>
-
+            <h2 className="text-2xl font-bold text-center mb-4 text-[#66FCF1]">
+              {selectedOpponent?.username} vs. You
+            </h2>
             {currentEventIndex < attackEvents.length ? (
               currentStep < stepDelays.length - 1 ? (
-                <>
-                  <AttackAnimation
-                    round={attackEvents[currentEventIndex].round}
-                    attacker={attackEvents[currentEventIndex].attacker}
-                    defender={attackEvents[currentEventIndex].defender}
-                    isProtected={attackEvents[currentEventIndex].isProtected}
-                    roll={attackEvents[currentEventIndex].roll}
-                    threshold={attackEvents[currentEventIndex].threshold}
-                    outcome={attackEvents[currentEventIndex].outcome}
-                    side={attackEvents[currentEventIndex].side}
-                    animationSpeed={animationSpeed}
-                  />
-                  {/* Battle description */}
-                  <div className="mt-4 text-center text-lg text-[#66FCF1]">
-                    {attackEvents[currentEventIndex].turn === 'player' ? (
-                      <p>
-                        You attacked {selectedOpponent?.username} with {attackEvents[currentEventIndex].attacker.name}
-                        {attackEvents[currentEventIndex].isProtected && 
-                          ` but they were protected by ${attackEvents[currentEventIndex].defender.name}`}
-                      </p>
-                    ) : (
-                      <p>
-                        {selectedOpponent?.username} attacked you with {attackEvents[currentEventIndex].attacker.name}
-                        {attackEvents[currentEventIndex].isProtected && 
-                          ` but you were protected by ${attackEvents[currentEventIndex].defender.name}`}
-                      </p>
-                    )}
-                    <p className="mt-2 text-base">
-                      {attackEvents[currentEventIndex].outcome === "HIT" ? (
-                        <span className="text-red-500 font-bold">Attack successful!</span>
-                      ) : (
-                        <span className="text-green-500 font-bold">Attack blocked!</span>
-                      )}
-                    </p>
-                  </div>
-                  
-                  {/* Live Score Section */}
-                  <div className="mt-6 bg-gray-800 bg-opacity-60 rounded-lg p-4 min-w-[200px]">
-                    <h3 className="text-[#66FCF1] text-xl font-bold mb-2 text-center">Current Score</h3>
-                    <div className="flex justify-center items-center gap-4">
-                      <div className="text-center">
-                        <p className="text-gray-400 text-sm">{selectedOpponent?.username}</p>
-                        <p className="text-2xl font-bold text-white">{currentOpponentHits}</p>
-                      </div>
-                      <div className="text-2xl font-bold text-[#66FCF1]">-</div>
-                      <div className="text-center">
-                        <p className="text-gray-400 text-sm">You</p>
-                        <p className="text-2xl font-bold text-white">{currentPlayerHits}</p>
-                      </div>
-                    </div>
-                    <p className="text-center text-sm text-gray-400 mt-2">
-                      Round {attackEvents[currentEventIndex].round} of {attackEvents.length / 2}
-                    </p>
-                  </div>
-                </>
+                <AttackAnimation
+                  round={attackEvents[currentEventIndex].round}
+                  attacker={attackEvents[currentEventIndex].attacker}
+                  defender={attackEvents[currentEventIndex].defender}
+                  isProtected={attackEvents[currentEventIndex].isProtected}
+                  roll={attackEvents[currentEventIndex].roll}
+                  threshold={attackEvents[currentEventIndex].threshold}
+                  outcome={attackEvents[currentEventIndex].outcome}
+                  side={attackEvents[currentEventIndex].side}
+                />
               ) : (
                 <div className="w-full h-72 flex items-center justify-center">
                   {/* Animation transition state */}

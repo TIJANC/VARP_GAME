@@ -34,11 +34,10 @@ const Home = () => {
   const [storedCardData, setStoredCardData] = useState(null);
 
   const levelMap = {
-    noob: 1,
-    amateur: 2,
-    senior: 3,
-    veteran: 4,
-    master: 5,
+    amateur: 1,
+    senior: 2,
+    veteran: 3,
+    master: 4,
   };
 
   // Determine the character image.
@@ -230,17 +229,23 @@ const Home = () => {
               <GiUpgrade className="text-3xl text-[#66FCF1]" />
               <span className="text-lg text-gray-300">Level: {userData.currentLevel}</span>
             </div>
-            <div className="flex flex-col items-center">
-              <span className="text-lg text-gray-300">
-                EXP: {userData.exp}/{userData.nextLevelExp}
-              </span>
-              <div className="w-32 bg-gray-800 rounded h-2 mt-1">
-                <div
-                  className="bg-[#66FCF1] h-2 rounded"
-                  style={{ width: `${(userData.exp / userData.nextLevelExp) * 100}%` }}
-                ></div>
+            {userData.currentLevel !== 'master' ? (
+              <div className="flex flex-col items-center">
+                <span className="text-lg text-gray-300">
+                  EXP: {userData.exp}/{userData.nextLevelExp}
+                </span>
+                <div className="w-32 bg-gray-800 rounded h-2 mt-1">
+                  <div
+                    className="bg-[#66FCF1] h-2 rounded"
+                    style={{ width: `${(userData.exp / userData.nextLevelExp) * 100}%` }}
+                  ></div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <span className="text-lg text-[#66FCF1]">Maximum Level Reached!</span>
+              </div>
+            )}
             <div className="flex flex-col items-center">
               <FaCoins className="text-3xl" style={{ color: '#FFD700' }} />
               <span className="text-lg text-gray-300">{userData.coins} Coins</span>

@@ -80,13 +80,36 @@ export default function TradeCenter() {
   };
 
   // Accept a trade.
-  const handleAcceptTrade = async (tradeId, offeredCards) => {
+  const handleAcceptTrade = async (tradeId, offeredCards, tradeOwnerUsername) => {
     try {
       const token = localStorage.getItem('token');
       const body = { tradeId, offeredCards };
       const res = await axios.post('/api/player/accept', body, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Create notification for trade owner
+      await axios.post('/api/pvp/notifications', {
+        userId: trade.ownerId, // The user who created the trade
+        type: 'trade_accepted',
+        title: 'Trade Accepted',
+        content: `Your trade has been accepted by another player!`,
+        tradeData: {
+          tradeId: tradeId,
+          acceptedBy: res.data.acceptedBy, // Assuming the backend sends this
+          offeredCards: offeredCards.map(card => {
+            const cardDetails = getCardDetails(card.cardId);
+            return {
+              name: cardDetails.name,
+              quantity: card.quantity,
+              type: cardDetails.type
+            };
+          })
+        }
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       alert(res.data.message || 'Trade accepted!');
       fetchMyCards();
       fetchOpenTrades();
@@ -235,7 +258,7 @@ export default function TradeCenter() {
                     <AcceptTradeForm
                       trade={trade}
                       myCards={myCards}
-                      onAccept={(offeredCards) => handleAcceptTrade(trade._id, offeredCards)}
+                      onAccept={(offeredCards) => handleAcceptTrade(trade._id, offeredCards, trade.ownerUsername)}
                     />
                   )}
                 </div>

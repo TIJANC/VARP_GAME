@@ -10,8 +10,13 @@ export const AttackAnimation = ({
   threshold, 
   outcome, 
   side,
-  round
+  round,
+  animationSpeed
 }) => {
+  // Calculate base duration and adjust it based on speed
+  const baseDuration = 1.2;
+  const duration = baseDuration / animationSpeed;
+
   // Variant for the round indicator.
   const roundIndicatorVariants = {
     initial: { opacity: 0, y: -50 },
@@ -77,7 +82,7 @@ export const AttackAnimation = ({
           variants={roundIndicatorVariants}
           initial="initial"
           animate="animate"
-          transition={{ duration: 0.8 }}
+          transition={{ duration: duration * 0.8 }}
         >
           Round {round}
         </motion.div>
@@ -93,7 +98,7 @@ export const AttackAnimation = ({
           variants={attackerVariants}
           initial="initial"
           animate="animate"
-          transition={{ duration: 1.2 }}
+          transition={{ duration: duration }}
         />
         
         {isProtected ? (
@@ -104,7 +109,7 @@ export const AttackAnimation = ({
             variants={defenderVariants}
             initial="initial"
             animate="animate"
-            transition={{ duration: 1.2, delay: 0.4 }}
+            transition={{ duration: duration, delay: duration * 0.4 }}
           />
         ) : (
           <motion.div
@@ -112,7 +117,7 @@ export const AttackAnimation = ({
             variants={rollVariants}
             initial="initial"
             animate="animate"
-            transition={{ duration: 0.8, delay: 1.0 }}
+            transition={{ duration: duration, delay: duration * 1.0 }}
           >
             {roll}
           </motion.div>
@@ -122,10 +127,9 @@ export const AttackAnimation = ({
       {/* Outcome Icon */}
       <motion.div
         className="mt-2"
-        variants={outcomeIconVariants}
-        initial="initial"
-        animate="animate"
-        transition={{ duration: 0.8, delay: 1.5 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: duration * 0.8, delay: duration * 1.5 }}
       >
         {outcomeIcon}
       </motion.div>

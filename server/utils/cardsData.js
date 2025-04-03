@@ -1418,7 +1418,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Japanese Encephalitis Virus (JEV)"],
-    deathProbability: 2.5,
+    deathProbability: 0.25,
     deathProbabilityVaccinated: 0.01,
   },
   {
