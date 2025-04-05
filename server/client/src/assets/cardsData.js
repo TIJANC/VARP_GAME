@@ -1018,8 +1018,8 @@ export const cardsData = [
     rarity: "common",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Cholera Virus"],
-    deathProbability: 0.37,
-    deathProbabilityVaccinated: 0.02,
+    deathProbability: 0.5,
+    deathProbabilityVaccinated: 0.03,
   },
   {
     id: 70,
@@ -1028,7 +1028,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Dengue"],
-    deathProbability: 0.03,
+    deathProbability: 0.05,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1038,7 +1038,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Diphteria"],
-    deathProbability: 0.7,
+    deathProbability: 0.1,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1068,7 +1068,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Yellow Fever"],
-    deathProbability: 0.37,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1078,7 +1078,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Haemophilus Influenzae Type B"],
-    deathProbability: 0.07,
+    deathProbability: 0.1,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1098,7 +1098,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["COVID-19 Virus"],
-    deathProbability: 0.4,
+    deathProbability: 0.05,
     deathProbabilityVaccinated: 0.002,
   },
   {
@@ -1108,7 +1108,7 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Measles Virus"],
-    deathProbability: 0.15,
+    deathProbability: 0.3,
     deathProbabilityVaccinated: 0.005,
   },
   {
@@ -1118,7 +1118,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Neisseria Meningitidis Group B"],
-    deathProbability: 0.15,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.005,
   },
   {
@@ -1128,7 +1128,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Neisseria Meningitidis Group A"],
-    deathProbability: 0.15,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.005,
   },
   {
@@ -1138,7 +1138,7 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Neisseria Meningitidis Group C"],
-    deathProbability: 0.15,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.005,
   },
   {
@@ -1148,7 +1148,7 @@ export const cardsData = [
     rarity: "common",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Neisseria Meningitidis Group W-135"],
-    deathProbability: 0.15,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.005,
   },
   {
@@ -1158,7 +1158,7 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Neisseria Meningitidis Group Y"],
-    deathProbability: 0.15,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.005,
   },
   {
@@ -1169,7 +1169,7 @@ export const cardsData = [
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 10"],
     deathProbability: 0.001,
-    deathProbabilityVaccinated: 0.0,
+    deathProbabilityVaccinated: 0.01,
   },
   {
     id: 85,
@@ -1178,7 +1178,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 16"],
-    deathProbability: 0.30,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1188,7 +1188,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 18"],
-    deathProbability: 0.30,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1198,7 +1198,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 31"],
-    deathProbability: 0.30,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1208,7 +1208,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 33"],
-    deathProbability: 0.30,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1218,7 +1218,7 @@ export const cardsData = [
     rarity: "common",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 52"],
-    deathProbability: 0.30,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1228,7 +1228,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 58"],
-    deathProbability: 0.30,
+    deathProbability: 0.5,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1238,8 +1238,8 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 6"],
-    deathProbability: 0.10,
-    deathProbabilityVaccinated: 0,
+    deathProbability: 0.15,
+    deathProbabilityVaccinated: 0.01,
   },
   {
     id: 92,
@@ -1248,8 +1248,8 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 7"],
-    deathProbability: 0.10,
-    deathProbabilityVaccinated: 0,
+    deathProbability: 0.15,
+    deathProbabilityVaccinated: 0.01,
   },
   {
     id: 93,
@@ -1258,7 +1258,7 @@ export const cardsData = [
     rarity: "common",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 8"],
-    deathProbability: 0.10,
+    deathProbability: 0.15,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1268,7 +1268,7 @@ export const cardsData = [
     rarity: "epic",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 9"],
-    deathProbability: 0.03,
+    deathProbability: 0.05,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1278,8 +1278,8 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 11"],
-    deathProbability: 0.03,
-    deathProbabilityVaccinated: 0.01,
+    deathProbability: 0.05,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 96,
@@ -1288,8 +1288,8 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Oncogenic Human Papillomavirus (HPV) Type 45"],
-    deathProbability: 0.30,
-    deathProbabilityVaccinated: 0.01,
+    deathProbability: 0.5,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 97,
@@ -1298,7 +1298,7 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Mumps"],
-    deathProbability: 0.02,
+    deathProbability: 0.03,
     deathProbabilityVaccinated: 0.001,
   },
   {
@@ -1318,8 +1318,8 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Polio Virus"],
-    deathProbability: 0.07,
-    deathProbabilityVaccinated: 0,
+    deathProbability: 0.1,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 100,
@@ -1329,7 +1329,7 @@ export const cardsData = [
     type: "virus",
     rarity_weight: rarityWeightsMapping["Post-Herpetic Neuralgia (PHN)"],
     deathProbability: 0.01,
-    deathProbabilityVaccinated: 0,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 101,
@@ -1339,7 +1339,7 @@ export const cardsData = [
     type: "virus",
     rarity_weight: rarityWeightsMapping["Rabies"],
     deathProbability: 1.00,
-    deathProbabilityVaccinated: 0,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 102,
@@ -1349,7 +1349,7 @@ export const cardsData = [
     type: "virus",
     rarity_weight: rarityWeightsMapping["Rubella"],
     deathProbability: 0.01,
-    deathProbabilityVaccinated: 0,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 103,
@@ -1368,7 +1368,7 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Salmonella Typhi"],
-    deathProbability: 0.20,
+    deathProbability: 0.3,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1378,7 +1378,7 @@ export const cardsData = [
     rarity: "common",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Streptococcus pneumoniae"],
-    deathProbability: 0.15,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1388,7 +1388,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Tetanus"],
-    deathProbability: 1.5,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1398,7 +1398,7 @@ export const cardsData = [
     rarity: "rare",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Typhoid"],
-    deathProbability: 1.5,
+    deathProbability: 0.2,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1409,7 +1409,7 @@ export const cardsData = [
     type: "virus",
     rarity_weight: rarityWeightsMapping["Chickenpox (Varicella)"],
     deathProbability: 0.1,
-    deathProbabilityVaccinated: 0.01,
+    deathProbabilityVaccinated: 0.001,
   },
   {
     id: 109,
@@ -1418,7 +1418,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Japanese Encephalitis Virus (JEV)"],
-    deathProbability: 0.25,
+    deathProbability: 0.3,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1428,7 +1428,7 @@ export const cardsData = [
     rarity: "legendary",
     type: "virus",
     rarity_weight: rarityWeightsMapping["Tick-Borne Encephalitis Virus (TBE) "],
-    deathProbability: 0.25,
+    deathProbability: 0.03,
     deathProbabilityVaccinated: 0.01,
   },
   {
@@ -1448,7 +1448,7 @@ export const cardsData = [
     rarity: "common",
     type: "virus",
     rarity_weight: rarityWeightsMapping["SARS-coV-2 Virus"],
-    deathProbability: 0.04,
+    deathProbability: 0.05,
     deathProbabilityVaccinated: 0.005,
   },
 ];
