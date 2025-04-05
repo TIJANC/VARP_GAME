@@ -22,8 +22,8 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String, required: false },
   coins: { type: Number, default: 0 }, // Use Number for numeric values
   exp: { type: Number, default: 0 },
-  currentLevel: { type: String, default: 'noob' }, // Default level
-  nextLevelExp: { type: Number, default: 100 }, // EXP needed for next level
+  currentLevel: { type: String, default: 'noob' },
+  nextLevelExp: { type: Number, default: 5000 },
   status: { type: String, required: false },
   cards: { type: [cardSchema], default: [] }, // Cards array
   deck: {

@@ -71,14 +71,21 @@ const DinamicQuiz = () => {
       setScore((prev) => prev + 1);
     }
 
-    // Wait to show correct answer and proceed
-    setTimeout(() => {
-      if (currentQuestion + 1 < questions.length) {
-        setCurrentQuestion((prev) => prev + 1);
-      } else {
-        endQuiz();
-      }
-    }, 1500);
+    // Wait to show correct answer
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Reset states before moving to next question
+    setShowAnswers(false);
+    setSelectedAnswer(null);
+    setDisplayedText('');
+    setIsTypingComplete(false);
+
+    // Then move to next question or end quiz
+    if (currentQuestion + 1 < questions.length) {
+      setCurrentQuestion((prev) => prev + 1);
+    } else {
+      endQuiz();
+    }
   };
 
   const endQuiz = async () => {
@@ -146,7 +153,7 @@ const DinamicQuiz = () => {
                 {!isTypingComplete && <span className="animate-pulse">|</span>}
               </h3>
 
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {showAnswers && (
                   <div className={`grid gap-3 ${
                     questions[currentQuestion].questionType === 'obbligatorietà' 
@@ -155,7 +162,7 @@ const DinamicQuiz = () => {
                   }`}>
                     {questions[currentQuestion].options.map((option, index) => (
                       <motion.button 
-                        key={index}
+                        key={`${currentQuestion}-${index}`}
                         onClick={() => !selectedAnswer && handleAnswer(option)}
                         className={`px-4 py-2 text-white rounded transition-colors duration-300
                           ${selectedAnswer 

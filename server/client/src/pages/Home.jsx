@@ -34,10 +34,11 @@ const Home = () => {
   const [storedCardData, setStoredCardData] = useState(null);
 
   const levelMap = {
-    amateur: 1,
-    senior: 2,
-    veteran: 3,
-    master: 4,
+    noob: 1,
+    amateur: 1,    // Shows level 1 image for noob and amateur
+    senior: 2,     // Shows level 2 image
+    veteran: 3,    // Shows level 3 image
+    master: 4      // Shows level 4 image
   };
 
   // Determine the character image.

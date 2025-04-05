@@ -127,7 +127,7 @@ router.post('/reward', authenticateUser, async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const levels = { noob: 100, amateur: 200, senior: 400, veteran: 800, master: 1600 };
+    const levels = { noob: 100, amateur: 5000, senior: 25000, veteran: 100000, master: 500000 };
 
     const expReward = correctAnswers * 5;
     const coinReward = correctAnswers * 2;
@@ -364,7 +364,7 @@ router.post('/sell-card', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'You can only sell duplicates (quantity > 1)' });
     }
 
-    // 3) Determine the card’s rarity.
+    // 3) Determine the card's rarity.
     const defaultCard = cardsData.find((dc) => dc.id === cardId);
     if (!defaultCard) {
       console.log(`Card definition not found for card #${cardId}`);
@@ -454,7 +454,6 @@ router.post('/create', authenticateUser, async (req, res) => {
 router.post('/accept', authenticateUser, async (req, res) => {
   try {
     const { tradeId, offeredCards } = req.body; 
-    // offeredCards should be an array like: [ { cardId, quantity }, ... ]
 
     const trade = await Trade.findById(tradeId);
     if (!trade) {
@@ -462,6 +461,11 @@ router.post('/accept', authenticateUser, async (req, res) => {
     }
     if (trade.status !== 'open') {
       return res.status(400).json({ error: 'Trade is not open' });
+    }
+
+    // Check if user is trying to accept their own trade
+    if (String(trade.ownerId) === String(req.userId)) {
+      return res.status(400).json({ error: 'You cannot accept your own trade' });
     }
 
     // The user trying to accept is "user2"
@@ -478,32 +482,26 @@ router.post('/accept', authenticateUser, async (req, res) => {
       }
     }
 
-    // 2) Sum up the rarity points of the offeredCards
-    let offeredValue = 0;
+    // 2) Check if all offered cards match the required rarity
+    const requiredRarity = trade.requiredValue; // Now this is the rarity string
     for (let oc of offeredCards) {
-      // find the card in cardsData
       const cardDef = cardsData.find((cd) => cd.id === oc.cardId);
       if (!cardDef) {
         return res.status(400).json({ error: `Card definition not found for ID ${oc.cardId}` });
       }
-      // fallback to 'common' if no rarity
       const cardRarity = cardDef.rarity || 'common';
-      const points = rarityToPoints[cardRarity] || 1;
-      offeredValue += points * oc.quantity;
+      if (cardRarity !== requiredRarity) {
+        return res.status(400).json({
+          error: `All cards must be ${requiredRarity.toUpperCase()} rarity for this trade.`,
+        });
+      }
     }
 
-    // 3) Compare to trade.requiredValue
-    if (offeredValue < trade.requiredValue) {
-      return res.status(400).json({
-        error: `Not enough total value. Required = ${trade.requiredValue}, you offered = ${offeredValue}`,
-      });
-    }
-
-    // 4) If valid, do the trade
+    // 3) If valid, do the trade
     const owner = await User.findById(trade.ownerId);
     if (!owner) return res.status(404).json({ error: 'Trade owner not found' });
 
-    // (a) user2 gets the trade’s offered card(s)
+    // (a) user2 gets the trade's offered card(s)
     trade.offer.forEach((offeredItem) => {
       const user2Card = user2.cards.find((c) => c.id === offeredItem.cardId);
       if (user2Card) {
@@ -513,7 +511,7 @@ router.post('/accept', authenticateUser, async (req, res) => {
       }
     });
 
-    // (b) owner gets user2’s offeredCards
+    // (b) owner gets user2's offeredCards
     offeredCards.forEach((oc) => {
       const ownerCard = owner.cards.find((c) => c.id === oc.cardId);
       if (ownerCard) {
@@ -523,11 +521,10 @@ router.post('/accept', authenticateUser, async (req, res) => {
       }
     });
 
-    // (c) decrement user2’s inventory for the offeredCards
+    // (c) decrement user2's inventory for the offeredCards
     offeredCards.forEach((oc) => {
       const user2Card = user2.cards.find((c) => c.id === oc.cardId);
       user2Card.quantity -= oc.quantity;
-      // if (user2Card.quantity <= 0) remove it or keep it at 0 if that's your preference
     });
 
     // Mark trade as completed
@@ -538,7 +535,10 @@ router.post('/accept', authenticateUser, async (req, res) => {
     await user2.save();
     await trade.save();
 
-    return res.json({ message: 'Trade completed successfully!' });
+    return res.json({ 
+      message: 'Trade completed successfully!',
+      acceptedBy: user2.username
+    });
   } catch (error) {
     console.error('Error accepting trade:', error);
     return res.status(500).json({ error: 'Internal server error' });

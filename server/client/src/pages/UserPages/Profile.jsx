@@ -71,38 +71,18 @@ const Profile = () => {
   }, []);
 
   // Helper function to determine which profile character image to display.
-  // For each character class, if the user is "noob" or "amateur" level, show the first image; otherwise, the second image.
   const getProfileCharacterImage = () => {
-    if (userInfo.avatar === 'knight') {
-      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
-        return '/Characters/knight1.png';
-      } else {
-        return '/Characters/knight2.png';
-      }
-    } else if (userInfo.avatar === 'archer') {
-      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
-        return '/Characters/archer1.png';
-      } else {
-        return '/Characters/archer2.png';
-      }
-    } else if (userInfo.avatar === 'rogue') {
-      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
-        return '/Characters/rogue1.png';
-      } else {
-        return '/Characters/rogue2.png';
-      }
-    } else if (userInfo.avatar === 'engineer') {
-      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
-        return '/Characters/engineer1.png';
-      } else {
-        return '/Characters/engineer2.png';
-      }
-    } else if (userInfo.avatar === 'wizard') {
-      if (userInfo.currentLevel === 'noob' || userInfo.currentLevel === 'amateur') {
-        return '/Characters/wizard1.png';
-      } else {
-        return '/Characters/wizard2.png';
-      }
+    if (!userInfo.avatar) return '/Images/default-avatar.png';
+    
+    const level = userInfo.currentLevel.toLowerCase();
+    if (level === 'noob' || level === 'amateur') {
+      return `/Characters/${userInfo.avatar}1.png`;
+    } else if (level === 'senior') {
+      return `/Characters/${userInfo.avatar}2.png`;
+    } else if (level === 'veteran') {
+      return `/Characters/${userInfo.avatar}3.png`;
+    } else if (level === 'master') {
+      return `/Characters/${userInfo.avatar}4.png`;
     }
     return '/Images/default-avatar.png';
   };

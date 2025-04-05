@@ -8,7 +8,7 @@ const NotificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['battle_result', 'challenge_received', 'system'],
+    enum: ['battle_result', 'challenge_received', 'system', 'trade_accepted'],
     required: true
   },
   title: {

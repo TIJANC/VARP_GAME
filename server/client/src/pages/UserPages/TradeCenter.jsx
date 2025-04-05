@@ -3,6 +3,16 @@ import axios from 'axios';
 import ActionNavbar from '../../components/ActionNavbar';
 import { cardsData } from '../../assets/cardsData';
 
+// Move the helper functions outside of the components
+const getRarityValue = (cardId) => {
+  const card = cardsData.find(c => c.id === cardId);
+  return card?.rarity || 'common';
+};
+
+const getCardDetails = (cardId) => {
+  return cardsData.find(card => card.id === cardId) || { name: 'Unknown Card', type: 'unknown' };
+};
+
 export default function TradeCenter() {
   const [myCards, setMyCards] = useState([]);
   const [openTrades, setOpenTrades] = useState([]);
@@ -62,11 +72,23 @@ export default function TradeCenter() {
     }
   };
 
-  // Create a trade listing.
+  // Modify the handleCreateTrade function
   const handleCreateTrade = async () => {
     try {
+      if (!selectedCardId) {
+        alert('Please select a card to trade');
+        return;
+      }
+
+      const cardRarity = getRarityValue(selectedCardId);
+      
       const token = localStorage.getItem('token');
-      const body = { cardId: selectedCardId, quantity: quantityToTrade, requiredValue };
+      const body = { 
+        cardId: selectedCardId, 
+        quantity: quantityToTrade, 
+        requiredValue: cardRarity // Instead of numeric value, we'll use rarity
+      };
+      
       const res = await axios.post('/api/player/create', body, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -80,7 +102,7 @@ export default function TradeCenter() {
   };
 
   // Accept a trade.
-  const handleAcceptTrade = async (tradeId, offeredCards, tradeOwnerUsername) => {
+  const handleAcceptTrade = async (tradeId, offeredCards, tradeOwnerUsername, trade) => {
     try {
       const token = localStorage.getItem('token');
       const body = { tradeId, offeredCards };
@@ -88,15 +110,15 @@ export default function TradeCenter() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Create notification for trade owner
+      // Create notification for trade owner using the correct endpoint
       await axios.post('/api/pvp/notifications', {
-        userId: trade.ownerId, // The user who created the trade
+        userId: trade.ownerId,
         type: 'trade_accepted',
         title: 'Trade Accepted',
         content: `Your trade has been accepted by another player!`,
         tradeData: {
           tradeId: tradeId,
-          acceptedBy: res.data.acceptedBy, // Assuming the backend sends this
+          acceptedBy: res.data.acceptedBy,
           offeredCards: offeredCards.map(card => {
             const cardDetails = getCardDetails(card.cardId);
             return {
@@ -117,11 +139,6 @@ export default function TradeCenter() {
       console.error('Error accepting trade:', err);
       alert(err.response?.data?.error || 'Failed to accept trade');
     }
-  };
-
-  // Helper function to get card details
-  const getCardDetails = (cardId) => {
-    return cardsData.find(card => card.id === cardId) || { name: 'Unknown Card', type: 'unknown' };
   };
 
   // Add this function to handle card clicks
@@ -154,11 +171,14 @@ export default function TradeCenter() {
               <option value="">--Select a Card--</option>
               {myCards
                 .filter((c) => c.quantity > 1)
-                .map((card) => (
-                  <option key={card.id} value={card.id}>
-                    {card.name} (Qty: {card.quantity})
-                  </option>
-                ))}
+                .map((card) => {
+                  const cardDetails = getCardDetails(card.id);
+                  return (
+                    <option key={card.id} value={card.id}>
+                      {cardDetails.name} ({cardDetails.rarity.toUpperCase()}) - Qty: {card.quantity}
+                    </option>
+                  );
+                })}
             </select>
           </div>
 
@@ -173,16 +193,12 @@ export default function TradeCenter() {
             />
           </div>
 
-          <div className="mb-2">
-            <label className="block text-gray-300 mb-1">Required Value (points):</label>
-            <input
-              type="number"
-              value={requiredValue}
-              onChange={(e) => setRequiredValue(Number(e.target.value))}
-              min={1}
-              className="w-full p-2 rounded bg-gray-700 text-gray-200"
-            />
-          </div>
+          {selectedCardId && (
+            <div className="mb-4 text-gray-300">
+              <p>Trading {getCardDetails(selectedCardId).name}</p>
+              <p className="text-sm">Can only be traded for {getRarityValue(selectedCardId).toUpperCase()} cards</p>
+            </div>
+          )}
 
           <button
             onClick={handleCreateTrade}
@@ -206,7 +222,7 @@ export default function TradeCenter() {
                       Trade #{trade._id.slice(-5)}
                     </h3>
                     <span className="text-sm text-gray-400">
-                      Value: {trade.requiredValue} points
+                      Rarity: {getRarityValue(trade.offer[0].cardId).toUpperCase()}
                     </span>
                   </div>
 
@@ -258,7 +274,7 @@ export default function TradeCenter() {
                     <AcceptTradeForm
                       trade={trade}
                       myCards={myCards}
-                      onAccept={(offeredCards) => handleAcceptTrade(trade._id, offeredCards, trade.ownerUsername)}
+                      onAccept={(offeredCards) => handleAcceptTrade(trade._id, offeredCards, trade.ownerUsername, trade)}
                     />
                   )}
                 </div>
@@ -305,19 +321,38 @@ function AcceptTradeForm({ trade, myCards, onAccept }) {
     setOfferQuantity(1);
   };
 
-  const handleAcceptClick = () => {
-    onAccept(selectedOffers);
-    setSelectedOffers([]);
+  const validateOffer = () => {
+    // Get the rarity of the cards being offered in the trade
+    const tradeCardRarity = getRarityValue(trade.offer[0].cardId);
+    
+    // Check if all offered cards match the required rarity
+    const allCardsMatchRarity = selectedOffers.every(offer => {
+      const offerCardRarity = getRarityValue(offer.cardId);
+      return offerCardRarity === tradeCardRarity;
+    });
+
+    if (!allCardsMatchRarity) {
+      alert(`You can only offer ${tradeCardRarity.toUpperCase()} cards for this trade.`);
+      return false;
+    }
+
+    return true;
   };
 
-  const getCardDetails = (cardId) => {
-    return cardsData.find(card => card.id === cardId) || { name: 'Unknown Card', type: 'unknown' };
+  const handleAcceptClick = () => {
+    if (validateOffer()) {
+      onAccept(selectedOffers);
+      setSelectedOffers([]);
+    }
   };
+
+  // Update the card selection dropdown to only show matching rarity cards
+  const tradeCardRarity = getRarityValue(trade.offer[0].cardId);
 
   return (
     <div className="mt-4 border-t border-gray-700 pt-4">
       <p className="text-sm text-gray-200 mb-3">
-        Pick cards to meet or exceed {trade.requiredValue} points
+        Select {tradeCardRarity.toUpperCase()} cards to trade
       </p>
       
       {/* Card Selection */}
@@ -328,14 +363,16 @@ function AcceptTradeForm({ trade, myCards, onAccept }) {
           className="p-2 rounded bg-gray-700 text-gray-200"
         >
           <option value="">--Select a Card--</option>
-          {myCards.filter(c => c.quantity > 0).map((card) => {
-            const cardDetails = getCardDetails(card.id);
-            return (
-              <option key={card.id} value={card.id}>
-                {cardDetails.name} ({cardDetails.type}) - Qty: {card.quantity}
-              </option>
-            );
-          })}
+          {myCards
+            .filter(c => c.quantity > 0 && getRarityValue(c.id) === tradeCardRarity)
+            .map((card) => {
+              const cardDetails = getCardDetails(card.id);
+              return (
+                <option key={card.id} value={card.id}>
+                  {cardDetails.name} ({cardDetails.rarity}) - Qty: {card.quantity}
+                </option>
+              );
+            })}
         </select>
 
         <div className="flex gap-2">

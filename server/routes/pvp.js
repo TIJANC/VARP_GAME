@@ -94,6 +94,28 @@ router.post('/battle-result', auth, async (req, res) => {
   }
 });
 
+// Add this route before the GET /notifications route
+router.post('/notifications', auth, async (req, res) => {
+  try {
+    const { userId, type, title, content, tradeData, battleData } = req.body;
+    
+    const notification = await Notification.create({
+      userId,
+      type,
+      title,
+      content,
+      tradeData,    // For trade notifications
+      battleData,   // For battle notifications (if needed in the future)
+      read: false
+    });
+
+    res.json(notification);
+  } catch (err) {
+    console.error('Error creating notification:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get notifications
 router.get('/notifications', auth, async (req, res) => {
   try {

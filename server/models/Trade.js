@@ -9,8 +9,16 @@ const tradeSchema = new mongoose.Schema({
       quantity: { type: Number, required: true },
     },
   ],
-  requiredValue: { type: Number, default: 0 }, // how many "points" needed
-  status: { type: String, default: 'open', enum: ['open', 'completed', 'canceled'] },
+  requiredValue: { 
+    type: String, 
+    required: true,
+    enum: ['common', 'rare', 'epic', 'legendary']  // Only allow these values
+  },
+  status: { 
+    type: String, 
+    default: 'open', 
+    enum: ['open', 'completed', 'canceled'] 
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

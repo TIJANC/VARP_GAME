@@ -303,80 +303,111 @@ const PvPBattle = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0B0C10] p-8">
+    <div className="relative min-h-screen bg-[#0B0C10] overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-[url('/BG/bg3.jpg')] bg-cover bg-center bg-no-repeat opacity-50" />
+      <div className="fixed inset-0 bg-[url('/BG/bg3.jpg')] bg-cover bg-center bg-no-repeat opacity-50" />
       
-      {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-6 text-[#66FCF1]">PvP Battle</h1>
-
-        {/* Navigation Buttons */}
-        <div className="flex gap-4 mb-8">
+      {/* Main Content Container with fixed height and scrollable sections */}
+      <div className="relative z-10 max-w-7xl mx-auto h-screen p-8 flex flex-col">
+        {/* Header Section - Fixed at top */}
+        <div className="flex-none mb-6">
+          <h1 className="text-4xl font-bold text-center text-[#66FCF1] mb-4">PvP Battle Arena</h1>
           <motion.button
             onClick={() => navigate('/games/card-game')}
-            className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 mx-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Build Deck <VscTools className="text-2xl" />
+            <VscTools className="text-xl" />
+            Build Your Deck
           </motion.button>
         </div>
 
-        {/* Deck Status */}
-        <div className="mb-8 p-4 bg-gray-800 bg-opacity-80 rounded">
-          <h2 className="text-xl font-semibold text-white mb-2">Your Deck Status</h2>
-          <div className="text-[#66FCF1]">
-            {isDeckValid(playerDeck) 
-              ? "✅ Your deck is ready for battle!" 
-              : (
-                <div>
-                  <p>❌ You need at least 4 vaccines and 4 viruses to battle</p>
-                  <p className="text-sm mt-2">
-                    Current deck: {playerDeck?.vaccines?.length || 0} vaccines, {playerDeck?.viruses?.length || 0} viruses
-                  </p>
-                </div>
-              )
-            }
-          </div>
-        </div>
-
-        {/* Available Players List */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold text-white mb-4">Available Players</h2>
-          {availablePlayers.length > 0 ? (
-            <div className="grid gap-4">
-              {availablePlayers.map((player) => (
-                <motion.div
-                  key={player._id}
-                  className="bg-gray-800 bg-opacity-80 p-4 rounded-lg flex items-center justify-between"
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{player.username}</h3>
-                    <p className="text-sm text-gray-300">Level: {player.level}</p>
+        {/* Main Content Area - Fixed height with grid */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-250px)]">
+          {/* Left Column - Deck Status (Fixed height) */}
+          <div className="lg:col-span-1 h-full">
+            <div className="bg-gray-800 bg-opacity-90 rounded-lg p-6 h-full">
+              <h2 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
+                Your Deck Status
+              </h2>
+              <div className="space-y-4">
+                <div className={`p-4 rounded-lg ${
+                  isDeckValid(playerDeck) ? 'bg-green-900/50' : 'bg-red-900/50'
+                }`}>
+                  <div className="text-lg text-white mb-2">
+                    {isDeckValid(playerDeck) 
+                      ? "✅ Ready for Battle!" 
+                      : "❌ Deck Requirements Not Met"
+                    }
                   </div>
-                  <motion.button
-                    onClick={() => handleBattleStart(player)}
-                    disabled={!isDeckValid(playerDeck)}
-                    className={`px-4 py-2 rounded ${
-                      isDeckValid(playerDeck)
-                        ? 'bg-blue-600 hover:bg-blue-700'
-                        : 'bg-gray-600 cursor-not-allowed'
-                    } text-white`}
-                    whileHover={isDeckValid(playerDeck) ? { scale: 1.05 } : {}}
-                    whileTap={isDeckValid(playerDeck) ? { scale: 0.95 } : {}}
-                  >
-                    Battle
-                  </motion.button>
-                </motion.div>
-              ))}
+                  <div className="text-sm text-gray-300">
+                    Current Deck:
+                    <ul className="mt-2 space-y-1">
+                      <li>Vaccines: {playerDeck?.vaccines?.length || 0}/4 required</li>
+                      <li>Viruses: {playerDeck?.viruses?.length || 0}/4 required</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="text-center text-gray-400 py-8">
-              No players available for battle at the moment
+          </div>
+
+          {/* Right Column - Available Players (Scrollable) */}
+          <div className="lg:col-span-2 h-full">
+            <div className="bg-gray-800 bg-opacity-90 rounded-lg p-6 h-full flex flex-col">
+              <h2 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2 flex-none">
+                Available Players
+              </h2>
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                {availablePlayers.length > 0 ? (
+                  <div className="grid gap-4">
+                    {availablePlayers.map((player) => (
+                      <motion.div
+                        key={player._id}
+                        className="bg-gray-700/50 p-4 rounded-lg flex items-center justify-between hover:bg-gray-600/50 transition-all"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="bg-[#66FCF1] rounded-full p-2 w-12 h-12 flex items-center justify-center">
+                            <span className="text-[#0B0C10] font-bold">
+                              {player.username.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{player.username}</h3>
+                            <p className="text-sm text-gray-300">Level: {player.level}</p>
+                          </div>
+                        </div>
+                        <motion.button
+                          onClick={() => handleBattleStart(player)}
+                          disabled={!isDeckValid(playerDeck)}
+                          className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                            isDeckValid(playerDeck)
+                              ? 'bg-[#66FCF1] text-[#0B0C10] hover:bg-[#45A29E]'
+                              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                          }`}
+                          whileHover={isDeckValid(playerDeck) ? { scale: 1.05 } : {}}
+                          whileTap={isDeckValid(playerDeck) ? { scale: 0.95 } : {}}
+                        >
+                          Battle
+                        </motion.button>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-700/30 rounded-lg">
+                    <p className="text-gray-400 text-lg">
+                      No players available for battle at the moment
+                    </p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      Check back later for new opponents
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -511,3 +542,4 @@ const PvPBattle = () => {
 };
 
 export default PvPBattle; 
+ 
