@@ -303,9 +303,9 @@ const PvPBattle = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0B0C10] overflow-hidden">
+    <div className="relative min-h-screen">
       {/* Background */}
-      <div className="fixed inset-0 bg-[url('/BG/bg3.jpg')] bg-cover bg-center bg-no-repeat opacity-50" />
+      <div className="fixed inset-0 bg-[url('/BG/bg3.jpg')] bg-cover bg-center opacity-50" />
       
       {/* Main Content Container with fixed height and scrollable sections */}
       <div className="relative z-10 max-w-7xl mx-auto h-screen p-8 flex flex-col">
@@ -353,7 +353,7 @@ const PvPBattle = () => {
             </div>
           </div>
 
-          {/* Right Column - Available Players (Scrollable) */}
+          {/* Right Column - Available Players (Scrollable & Responsive) */}
           <div className="lg:col-span-2 h-full">
             <div className="bg-gray-800 bg-opacity-90 rounded-lg p-6 h-full flex flex-col">
               <h2 className="text-2xl font-bold text-white mb-4 border-b border-gray-700 pb-2 flex-none">
@@ -361,34 +361,37 @@ const PvPBattle = () => {
               </h2>
               <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {availablePlayers.length > 0 ? (
-                  <div className="grid gap-4">
+                  // Responsive grid: 1 col on small, 2 on md, 3 on lg
+                  <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {availablePlayers.map((player) => (
                       <motion.div
                         key={player._id}
-                        className="bg-gray-700/50 p-4 rounded-lg flex items-center justify-between hover:bg-gray-600/50 transition-all"
-                        whileHover={{ scale: 1.01 }}
+                        // Stack vertically on small screens, side-by-side on sm and above
+                        className="bg-gray-700/50 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-gray-600/50 transition-all"
+                        whileHover={{ scale: 1}}
                       >
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-4 mb-4 sm:mb-0">
                           <div className="bg-[#66FCF1] rounded-full p-2 w-12 h-12 flex items-center justify-center">
                             <span className="text-[#0B0C10] font-bold">
                               {player.username.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-white">{player.username}</h3>
-                            <p className="text-sm text-gray-300">Level: {player.level}</p>
+                            <h3 className="text-base font-semibold text-white">
+                              {player.username}
+                            </h3>
                           </div>
                         </div>
                         <motion.button
                           onClick={() => handleBattleStart(player)}
                           disabled={!isDeckValid(playerDeck)}
-                          className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                          className={`px-6 py-3 sm:px-4 sm:py-2 rounded-lg font-semibold transition-all ${
                             isDeckValid(playerDeck)
                               ? 'bg-[#66FCF1] text-[#0B0C10] hover:bg-[#45A29E]'
                               : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                           }`}
-                          whileHover={isDeckValid(playerDeck) ? { scale: 1.05 } : {}}
-                          whileTap={isDeckValid(playerDeck) ? { scale: 0.95 } : {}}
+                          whileHover={isDeckValid(playerDeck) ? { scale: 1 } : {}}
+                          whileTap={isDeckValid(playerDeck) ? { scale: 1 } : {}}
                         >
                           Battle
                         </motion.button>

@@ -44,10 +44,10 @@ const DinamicQuiz = () => {
       setShowAnswers(false);
       setSelectedAnswer(null);
       setDisplayedText('');
-      
+
       const text = questions[currentQuestion].question;
       let currentChar = 0;
-      
+
       const typingInterval = setInterval(() => {
         if (currentChar <= text.length - 1) {
           setDisplayedText(text.substring(0, currentChar + 1));
@@ -66,14 +66,14 @@ const DinamicQuiz = () => {
   const handleAnswer = async (selectedAnswer) => {
     setSelectedAnswer(selectedAnswer);
     setAnsweredQuestions((prev) => prev + 1);
-    
+
     if (selectedAnswer === questions[currentQuestion].correctAnswer) {
       setScore((prev) => prev + 1);
     }
 
-    // Wait to show correct answer
+    // Wait to highlight correct/incorrect answer
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     // Reset states before moving to next question
     setShowAnswers(false);
     setSelectedAnswer(null);
@@ -91,9 +91,9 @@ const DinamicQuiz = () => {
   const endQuiz = async () => {
     try {
       const token = localStorage.getItem('token');
-      // Calculate rewards based on correct answers (1 coin and 1 exp per correct answer)
-      const coinsEarned = score; // 1 coin per correct answer
-      const expEarned = score;   // 1 exp per correct answer
+      // Calculate rewards (1 coin & 1 exp per correct answer)
+      const coinsEarned = score;
+      const expEarned = score;
 
       const response = await axios.post('/api/player/reward', {
         correctAnswers: score,
@@ -103,8 +103,8 @@ const DinamicQuiz = () => {
       });
 
       setRewards(response.data);
-      setEarnedCoins(coinsEarned); // Set the coins earned during this quiz
-      setEarnedExp(expEarned);     // Set the exp earned during this quiz
+      setEarnedCoins(coinsEarned);
+      setEarnedExp(expEarned);
       setQuizCompleted(true);
     } catch (error) {
       console.error('Error completing quiz:', error);
@@ -118,33 +118,40 @@ const DinamicQuiz = () => {
     tap: { scale: 0.95 }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center text-2xl text-white">
-      Loading questions...
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-2xl text-white">
+        Loading questions...
+      </div>
+    );
+  }
 
-  if (error) return (
-    <div className="min-h-screen flex items-center justify-center text-2xl text-red-500">
-      {error}
-    </div>
-  );
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-2xl text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-[#0B0C10] text-gray-200 p-4">
       <div className="absolute inset-0 bg-[url('/BG/bg1.jpg')] bg-cover bg-center bg-no-repeat opacity-100"></div>
 
-      <div className="relative z-10 max-w-3xl mx-auto p-8 rounded-lg">
-        <motion.button 
-          className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-          onClick={endQuiz}
-          variants={buttonVariants}
-          whileHover="hover"
-          whileTap="tap"
-        >
-          <IoMdExit className='sm:text-2xl lg:text-3xl'/>
-        </motion.button>
-        
+      <div className="relative z-10 max-w-3xl mx-auto p-8 pt-16 rounded-lg">
+        {/* Only show End Quiz button if quiz is not completed */}
+        {!quizCompleted && (
+          <motion.button
+            className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            onClick={endQuiz}
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <IoMdExit className="sm:text-2xl lg:text-3xl" />
+          </motion.button>
+        )}
+
         {!quizCompleted ? (
           questions.length > 0 && currentQuestion < questions.length ? (
             <div>
@@ -155,34 +162,38 @@ const DinamicQuiz = () => {
 
               <AnimatePresence mode="wait">
                 {showAnswers && (
-                  <div className={`grid gap-3 ${
-                    questions[currentQuestion].questionType === 'obbligatorietà' 
-                      ? 'grid-cols-2' 
-                      : 'grid-cols-1'
-                  }`}>
+                  <div
+                    className={`grid gap-3 ${
+                      questions[currentQuestion].questionType === 'obbligatorietà'
+                        ? 'grid-cols-2'
+                        : 'grid-cols-1'
+                    }`}
+                  >
                     {questions[currentQuestion].options.map((option, index) => (
-                      <motion.button 
+                      <motion.button
                         key={`${currentQuestion}-${index}`}
                         onClick={() => !selectedAnswer && handleAnswer(option)}
                         className={`px-4 py-2 text-white rounded transition-colors duration-300
-                          ${selectedAnswer 
-                            ? option === questions[currentQuestion].correctAnswer
-                              ? 'bg-green-500'
-                              : option === selectedAnswer
+                          ${
+                            selectedAnswer
+                              ? option === questions[currentQuestion].correctAnswer
+                                ? 'bg-green-500'
+                                : option === selectedAnswer
                                 ? 'bg-red-500'
                                 : 'bg-[#45A29E]'
-                            : 'bg-[#45A29E] hover:bg-[#66FCF1]'
+                              : 'bg-[#45A29E] hover:bg-[#66FCF1]'
                           }
-                          ${questions[currentQuestion].questionType === 'obbligatorietà' 
-                            ? 'text-xl font-bold' 
-                            : ''
+                          ${
+                            questions[currentQuestion].questionType === 'obbligatorietà'
+                              ? 'text-xl font-bold'
+                              : ''
                           }`}
                         variants={buttonVariants}
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
-                        whileHover={!selectedAnswer ? "hover" : {}}
-                        whileTap={!selectedAnswer ? "tap" : {}}
+                        whileHover={!selectedAnswer ? 'hover' : {}}
+                        whileTap={!selectedAnswer ? 'tap' : {}}
                         transition={{ delay: index * 0.2 }}
                         disabled={selectedAnswer !== null}
                       >
@@ -209,9 +220,9 @@ const DinamicQuiz = () => {
                 <p className="text-lg">EXP: {rewards.exp}</p>
               </div>
             )}
-            <motion.button 
+            <motion.button
               className="mt-4 px-6 py-3 bg-blue-600 text-white rounded"
-              onClick={() => window.location.href = '/home'}
+              onClick={() => (window.location.href = '/home')}
               variants={buttonVariants}
               whileHover="hover"
               whileTap="tap"
